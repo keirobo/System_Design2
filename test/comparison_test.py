@@ -54,6 +54,13 @@ def img_processing(img):
 
     return color_src01, tool, center
 
+def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
+    if abs(i_x - n_x) < 100 and abs(i_y - n_y) < 100:
+        return True
+    else:
+        return False
+
+
 
 if __name__ == '__main__':
     #グレースケールで読み込み
@@ -77,6 +84,12 @@ if __name__ == '__main__':
     gray_img = cv2.imread("data1.jpg", 0)
 
     now_img, now_tool, now_center = img_processing(gray_img)
+
+    if len(now_tool) > len(init_tool): num = len(now_tool)
+    else: num = len(init_tool)
+    
+    for i in range(num):
+        print("[", i, "]:", estimation(init_tool[i], init_center[i][0], init_center[i][1], now_tool[i], now_center[i][0], now_center[i][1]))
 
     # 結果の表示
     # cv2.imwrite("test_img.jpg", estimation(gray_img))
