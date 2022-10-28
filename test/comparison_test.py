@@ -3,7 +3,8 @@ import numpy as np
 import random
 import sys
 
-def estimation(img):
+def img_processing(img):
+    #エッジ検出
     canny_img = cv2.Canny(img, 50, 150) #canny
 
     # 前処理が不要な場合は下記行をコメントアウト
@@ -14,7 +15,6 @@ def estimation(img):
     mono_src = 255 - mono_src
     # ラベリング結果書き出し用に二値画像をカラー変換
     color_src01 = cv2.cvtColor(mono_src, cv2.COLOR_GRAY2BGR)
-    color_src02 = cv2.cvtColor(mono_src, cv2.COLOR_GRAY2BGR)
     # ラベリング処理
     label = cv2.connectedComponentsWithStats(mono_src)
     # オブジェクト情報を項目別に抽出
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     #グレースケールで読み込み
     initial = cv2.imread("initial.jpg", 0)
 
-    init_img, init_tool, init_center = estimation(initial)
+    init_img, init_tool, init_center = img_processing(initial)
     
     # cv2.imwrite("test_img0.jpg", init_img)
     # cv2.imwrite("test_img1.jpg", init_tool[0])
@@ -75,6 +75,8 @@ if __name__ == '__main__':
     #==========================================
 
     gray_img = cv2.imread("data1.jpg", 0)
+
+    now_img, now_tool, now_center = img_processing(gray_img)
 
     # 結果の表示
     # cv2.imwrite("test_img.jpg", estimation(gray_img))
