@@ -36,8 +36,9 @@ im_floodfill_inv = cv2.bitwise_not(im_floodfill)
 src_out = src_th | im_floodfill_inv
 
 color_src01 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
+color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
 
-cv2.imwrite("canny.jpg", color_src01)
+# cv2.imwrite("canny.jpg", color_src01)
 
 label = cv2.connectedComponentsWithStats(src_out)
 # オブジェクト情報を項目別に抽出
@@ -46,6 +47,7 @@ tmp_data = np.delete(label[2], 0, 0)
 tmp_center = np.delete(label[3], 0, 0)
 data = []
 center = []
+tool = []
 j = 0
 # オブジェクト情報を利用してラベリング結果を画面に表示
 for i in range(n):
@@ -60,6 +62,9 @@ for i in range(j):
   y0 = data[i][1]
   x1 = data[i][0] + data[i][2]
   y1 = data[i][1] + data[i][3]
+
+  tool.append(color_src02[y0 : y1, x0: x1])
+
   cv2.rectangle(color_src01, (x0, y0), (x1, y1), (0, 0, 255))
   # # 各オブジェクトのラベル番号と面積に黄文字で表示
   # cv2.putText(color_src01, "ID: " +str(i + 1), (x1 - 20, y1 + 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
@@ -70,3 +75,5 @@ for i in range(j):
 
 # 結果の表示
 cv2.imwrite("test_img.jpg", color_src01)
+cv2.imwrite("test_img1.jpg", tool[0])
+cv2.imwrite("test_img2.jpg", tool[1])
