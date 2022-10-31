@@ -38,7 +38,7 @@ src_out = src_th | im_floodfill_inv
 color_src01 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
 color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
 
-# cv2.imwrite("canny.jpg", color_src01)
+# cv2.imwrite("data_initial.jpg", color_src02)
 
 label = cv2.connectedComponentsWithStats(src_out)
 # オブジェクト情報を項目別に抽出
