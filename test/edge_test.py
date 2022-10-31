@@ -16,12 +16,12 @@ import cv2
 gray_img = cv2.imread("initial.jpg", 0)
     
 #エッジ検出
-canny_img = cv2.Canny(gray_img, 35, 140) #canny
+canny_img = cv2.Canny(gray_img, 60, 141) #canny
 # 画像をグレースケールで読み込み
 
 # 前処理（平準化フィルターを適用した場合）
 # 前処理が不要な場合は下記行をコメントアウト
-blur_src = cv2.GaussianBlur(canny_img, (5, 5), 2)
+blur_src = cv2.GaussianBlur(canny_img, (5, 5), 3)
 # 二値変換
 # 前処理を使用しなかった場合は、blur_srcではなくgray_srcに書き換えるする
 mono_src = cv2.threshold(blur_src, 48, 255, cv2.THRESH_BINARY_INV)[1]
