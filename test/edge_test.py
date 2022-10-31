@@ -16,12 +16,9 @@ import cv2
 gray_img = cv2.imread("initial.jpg", 0)
     
 #エッジ検出
-sobel_img = cv2.Sobel(gray_img, cv2.CV_32F, 1, 1, 1, 5) #sobel
-laplacian_img = cv2.Laplacian(gray_img, cv2.CV_32F, 1, 5) #laplacian
 canny_img = cv2.Canny(gray_img, 35, 140) #canny
 # 画像をグレースケールで読み込み
-# gray_src = cv2.imread(canny_img, 0)
-canny_img
+
 # 前処理（平準化フィルターを適用した場合）
 # 前処理が不要な場合は下記行をコメントアウト
 blur_src = cv2.GaussianBlur(canny_img, (5, 5), 2)
