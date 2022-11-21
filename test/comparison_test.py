@@ -77,21 +77,43 @@ def img_processing(img):
 
 def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
     if abs(i_x - n_x) < 100 and abs(i_y - n_y) < 100:
-        return True
+        ret = maching(i_tool, n_tool)
+
+        if(abs(ret) < 20):
+            return ret, True
+        else:
+            return ret, False
     else:
         return False
 
+def maching(i_img, n_img):
+    target_img = i_img
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+    # detector = cv2.ORB_create()
+    detector = cv2.AKAZE_create()
+    (target_kp, target_des) = detector.detectAndCompute(target_img, None)
+    
+    try:
+        comparing_img = n_img
+        (comparing_kp, comparing_des) = detector.detectAndCompute(comparing_img, None)
+        matches = bf.match(target_des, comparing_des)
+        dist = [m.distance for m in matches]
+        ret = sum(dist) / len(dist)
+    except cv2.error:
+        ret = 100000
 
+    print(ret)
+    return ret
 
 if __name__ == '__main__':
     #グレースケールで読み込み
-    initial = cv2.imread("initial.jpg", 0)
+    initial = cv2.imread("data0.jpg", 0)
 
     init_img, init_tool, init_center = img_processing(initial)
     
-    # cv2.imwrite("test_img00.jpg", init_img)
-    # cv2.imwrite("test_img01.jpg", init_tool[0])
-    # cv2.imwrite("test_img02.jpg", init_tool[1])
+    cv2.imwrite("test_img00.jpg", init_img)
+    cv2.imwrite("test_img01.jpg", init_tool[0])
+    cv2.imwrite("test_img02.jpg", init_tool[1])
 
 
     # 写真撮るとき ============================
@@ -106,9 +128,9 @@ if __name__ == '__main__':
 
     now_img, now_tool, now_center = img_processing(gray_img)
 
-    # cv2.imwrite("test_img10.jpg", now_img)
-    # cv2.imwrite("test_img11.jpg", now_tool[0])
-    # cv2.imwrite("test_img12.jpg", now_tool[1])
+    cv2.imwrite("test_img10.jpg", now_img)
+    cv2.imwrite("test_img11.jpg", now_tool[0])
+    cv2.imwrite("test_img12.jpg", now_tool[1])
 
     if len(now_tool) > len(init_tool): num = len(now_tool)
     else: num = len(init_tool)
