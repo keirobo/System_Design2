@@ -10,11 +10,11 @@ IMG_SIZE = (200, 200)
 target_img_path = IMG_DIR + TARGET_FILE
 print(target_img_path)
 target_img = cv2.imread(target_img_path, cv2.IMREAD_GRAYSCALE)
-target_img = cv2.resize(target_img, IMG_SIZE)
+# target_img = cv2.resize(target_img, IMG_SIZE)
 
 bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-# detector = cv2.ORB_create()
-detector = cv2.AKAZE_create()
+detector = cv2.ORB_create()
+# detector = cv2.AKAZE_create()
 (target_kp, target_des) = detector.detectAndCompute(target_img, None)
 
 print('TARGET_FILE: %s' % (TARGET_FILE))
@@ -27,7 +27,7 @@ for file in files:
     comparing_img_path = IMG_DIR + file
     try:
         comparing_img = cv2.imread(comparing_img_path, cv2.IMREAD_GRAYSCALE)
-        comparing_img = cv2.resize(comparing_img, IMG_SIZE)
+        # comparing_img = cv2.resize(comparing_img, IMG_SIZE)
         (comparing_kp, comparing_des) = detector.detectAndCompute(comparing_img, None)
         matches = bf.match(target_des, comparing_des)
         dist = [m.distance for m in matches]
