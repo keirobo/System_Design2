@@ -89,9 +89,9 @@ if __name__ == '__main__':
 
     init_img, init_tool, init_center = img_processing(initial)
     
-    cv2.imwrite("test_img00.jpg", init_img)
-    cv2.imwrite("test_img01.jpg", init_tool[0])
-    cv2.imwrite("test_img02.jpg", init_tool[1])
+    # cv2.imwrite("test_img00.jpg", init_img)
+    # cv2.imwrite("test_img01.jpg", init_tool[0])
+    # cv2.imwrite("test_img02.jpg", init_tool[1])
 
 
     # 写真撮るとき ============================
@@ -106,9 +106,9 @@ if __name__ == '__main__':
 
     now_img, now_tool, now_center = img_processing(gray_img)
 
-    cv2.imwrite("test_img10.jpg", now_img)
-    cv2.imwrite("test_img11.jpg", now_tool[0])
-    cv2.imwrite("test_img12.jpg", now_tool[1])
+    # cv2.imwrite("test_img10.jpg", now_img)
+    # cv2.imwrite("test_img11.jpg", now_tool[0])
+    # cv2.imwrite("test_img12.jpg", now_tool[1])
 
     if len(now_tool) > len(init_tool): num = len(now_tool)
     else: num = len(init_tool)
