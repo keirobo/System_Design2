@@ -1,6 +1,6 @@
 import Tool_Estimation
 import SlackBot as SB
-import Spreadsheet
+import Spreadsheet as SS
 import configparser
 
 def main():
@@ -9,15 +9,21 @@ def main():
 
   #ログイン情報
   config.read("config.ini", encoding="utf-8")
-  
-  Slack_Token = config['user']['Slack_Token']
+  Slack_Token = config['Slack']['token']
+  key = config['Spreadsheet']['Key']
 
-  print(Slack_Token)
+  print(key)
 
-  SB.write(Slack_Token, "U01T72KE2VC")
+  SS.init(key)
+
+  user_id = SS.get_user_id(1)
+
+  # print(user_id)
+
+  if(str(user_id).startswith('None') == False): SB.write(Slack_Token, user_id)
 
   while(True):
-    print("main")
+    # print("main")
     break
 
 
