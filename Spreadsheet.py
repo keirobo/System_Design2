@@ -1,6 +1,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import re
+import wrapt_timeout_decorator
 
 # # お決まりの文句
 # # 2つのAPIを記述しないとリフレッシュトークンを3600秒毎に発行し続けなければならない
@@ -25,6 +26,7 @@ import re
 # data = worksheet.find("aa")
 # print(data)
 
+@wrapt_timeout_decorator.timeout(dec_timeout=10)
 def init(key):
   global KEY, gc, workbook
   # お決まりの文句

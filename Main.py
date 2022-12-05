@@ -5,24 +5,31 @@ import configparser
 import cv2 as cv
 import numpy as np
 from pyzbar.pyzbar import decode
+import time
 
 def main():
+
+  flag_once  = 0
   
   cap = cv.VideoCapture(0)
   #出力ウィンドウの設定
   # cap.set(3,640)
   # cap.set(3,480)
 
-  # ここに処理を書く
   config = configparser.ConfigParser()
-
+  
+  #Slackのトークンとスプレッドシートのキーを取得
   config.read("config.ini", encoding="utf-8")
   Slack_Token = config['Slack']['token']
   key = config['Spreadsheet']['Key']
 
   print(key)
 
-  SS.init(key)
+  #スプレッドシートのキーを使用してスプレッドシートを開く
+  try:
+    SS.init(key)
+  except TimeoutError:
+    print("Error")
 
   while(True):
     # print("main")
@@ -33,40 +40,35 @@ def main():
         print("フレームは受信できません。終了しています...")
         break
 
-    # 結果のフレーム表示
-    # if cv.waitKey(1) & 0xFF == ord('q'):
-    #     break
+    #QRコード読み込み処理
     codes = decode(frame)
-    if len(codes) > 0:
+    if len(codes) > 0 and flag_once == 0:
+      flag_once = 1
       output = codes[0][0].decode('utf-8', 'ignore')
       print(output)
+      #読み込み成功したら
       if 'output' != None:
-        #cap_cam.read()
-        # cap.release()
-    
-        user_id = SS.get_user_id(output)
+        #画像撮影処理
+        time.sleep(1.5)
+        
+        ret, frame = cap.read()
+        cv.imwrite('camera_test.jpg', frame)
+        
+        #工具判別処理
+        
 
-        if(str(user_id).startswith('None') == False): SB.write(Slack_Token, user_id)
-    
-    # if len(barcode) >= 1:
-    #   #QRコードデータはバイトオブジェクトなので、カメラ上に描くために、文字列に変換する
-    #   myData = barcode.data.decode('utf-8')
-    #   print(myData)
-    #   #QRコードの周りに長方形を描画しデータを表示する
-    #   pts =np.array([barcode.polygon],np.int32)
-    #   #polylines()関数で複数の折れ線を描画
-    #   cv.polylines(frame,[pts],True,(255,0,0),5)
-    #   pts2 =barcode.rect
-    #   #putText()関数で文字列を描画
-    #   cv.putText(frame,myData,(pts2[0],pts2[1]),cv.FONT_HERSHEY_COMPLEX,1,(255,0,0),2)
-    # #imshow()関数で出力ウィンドウを表示
-    # cv.imshow('test',frame)
-    # #qキーが押されるまで待機
-    # if cv.waitKey(1) & 0xFF == ord('q'):
-    #   break
-      
-    # break
+        #貸し出し OR 返却モード選択処理
+        
 
+        #スプレッドシート書き込み処理
+        
+
+        # user_id = SS.get_user_id(output)
+
+        # if(str(user_id).startswith('None') == False): SB.write(Slack_Token, user_id)
+    else:
+      flag_once = 0
+      # print("QRコード読み込みなし")
 
 if __name__ == "__main__":
   main()
