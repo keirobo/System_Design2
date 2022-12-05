@@ -12,14 +12,11 @@ class CameraApplication(tk.Frame):
         # USBカメラの設定(idは、基本:0、カメラ搭載PC:1(0は搭載カメラ))
         camera_id = 0
         self.cap = cv2.VideoCapture(camera_id)
-        # 撮影制御用(True:撮影中  False:停止中)
-        # self.cap_flg = True
  
         # 基本情報 --------------------------------------------------------------------
         # タイトル
         root.title('USBカメラアプリ')
-        # ウィンドサイズ
-        # root.geometry('800x600')
+        # ウィンドサイズ フルスクリーン
         root.attributes('-fullscreen', True)
  
         # 構成要素 ----------------------------------------------------------------------
@@ -31,7 +28,7 @@ class CameraApplication(tk.Frame):
         self.label_quality.pack()
 
         # キャンバス(画像表示)
-        self.canvas_cam = tk.Canvas(self.master,width=1280,height=960,bg='yellow')
+        self.canvas_cam = tk.Canvas(self.master,width=640*2.5,height=480*2.5,bg='yellow')
         self.canvas_cam.pack()
         # canvasのサイズ取得
         self.canvas_cam.update()
@@ -47,11 +44,8 @@ class CameraApplication(tk.Frame):
          
         # カメラ画像の取得(ret:画像の取得可否のTrue/Flase, frame:RGB画像)
         ret, frame1 = self.cap.read()
-        # print(str(self.canvas_w) + ' ' + str(self.canvas_h))
-        # print(self.canvas_h)
 
         frame = cv2.resize(frame1 , (self.canvas_w, self.canvas_h))
-        # print(str(frame.shape))
 
         # BGRで取得したものをRGBに変換する
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
