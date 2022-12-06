@@ -3,64 +3,57 @@ import PIL
 import cv2
 from PIL import Image, ImageTk, ImageOps  # 画像関連
  
- 
-class CameraApplication(tk.Frame):
-    def __init__(self, master = None):
-        super().__init__(master)
+def start_video():
          
-        # カメラ --------------------------------------------------------------------
-        # USBカメラの設定(idは、基本:0、カメラ搭載PC:1(0は搭載カメラ))
-        camera_id = 0
-        self.cap = cv2.VideoCapture(camera_id)
- 
-        # 基本情報 --------------------------------------------------------------------
-        # タイトル
-        root.title('USBカメラアプリ')
-        # ウィンドサイズ フルスクリーン
-        root.attributes('-fullscreen', True)
- 
-        # 構成要素 ----------------------------------------------------------------------
-        # ラベル-1
-        label_cam = tk.Label(root, text='カメラの映像')
-        label_cam.pack()
-        # ラベル-2
-        self.label_quality = tk.Label(root, text='画質')
-        self.label_quality.pack()
+    global photo
+     
+    # カメラ画像の取得(ret:画像の取得可否のTrue/Flase, frame:RGB画像)
+    ret, frame1 = cap.read()
 
-        # キャンバス(画像表示)
-        self.canvas_cam = tk.Canvas(self.master,width=640*2.5,height=480*2.5,bg='yellow')
-        self.canvas_cam.pack()
-        # canvasのサイズ取得
-        self.canvas_cam.update()
-        self.canvas_w = self.canvas_cam.winfo_width()
-        self.canvas_h = self.canvas_cam.winfo_height()
-        
-        self.start_video()
- 
-    # 動画再生(再帰的に自身を呼ぶ)
-    def start_video(self):
-         
-        global photo
-         
-        # カメラ画像の取得(ret:画像の取得可否のTrue/Flase, frame:RGB画像)
-        ret, frame1 = self.cap.read()
+    frame = cv2.resize(frame1 , (canvas_w, canvas_h))
 
-        frame = cv2.resize(frame1 , (self.canvas_w, self.canvas_h))
-
-        # BGRで取得したものをRGBに変換する
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # OpenCV frame を Pillow Photo に変換(canvasに表示するにはPillowの軽視にする必要がある)
-        photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))       
-        # canvasに画像を表示
-        self.canvas_cam.create_image(self.canvas_w/2, self.canvas_h/2, image=photo)
-        # 画像サイズをラベルに表示
-        self.label_quality['text'] = 'Image shape:'+str(frame.shape)
-         
-        # 100msec後に start_video()を実行(繰り返し)-----------------
-        self.after(100, self.start_video)
- 
+    # BGRで取得したものをRGBに変換する
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # OpenCV frame を Pillow Photo に変換(canvasに表示するにはPillowの軽視にする必要がある)
+    photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))       
+    # canvasに画像を表示
+    canvas_cam.create_image(canvas_w/2, canvas_h/2, image=photo)
+    # 画像サイズをラベルに表示
+    label_quality['text'] = 'Image shape:'+str(frame.shape)
+     
+    # 100msec後に start_video()を実行(繰り返し)-----------------
+    root.after(100, start_video)
  
 if __name__ == '__main__':
     root = tk.Tk()
-    app = CameraApplication(master = root)
-    app.mainloop()
+
+    # カメラ --------------------------------------------------------------------
+    # USBカメラの設定(idは、基本:0、カメラ搭載PC:1(0は搭載カメラ))
+    camera_id = 0
+    cap = cv2.VideoCapture(camera_id)
+ 
+    # 基本情報 --------------------------------------------------------------------
+    # タイトル
+    root.title('USBカメラアプリ')
+    # ウィンドサイズ フルスクリーン
+    root.attributes('-fullscreen', True)
+ 
+    # 構成要素 ----------------------------------------------------------------------
+    # ラベル-1
+    label_cam = tk.Label(root, text='カメラの映像')
+    label_cam.pack()
+    # ラベル-2
+    label_quality = tk.Label(root, text='画質')
+    label_quality.pack()
+
+    # キャンバス(画像表示)
+    canvas_cam = tk.Canvas(root,width=640*2.5,height=480*2.5,bg='yellow')
+    canvas_cam.pack()
+    # canvasのサイズ取得
+    canvas_cam.update()
+    canvas_w = canvas_cam.winfo_width()
+    canvas_h = canvas_cam.winfo_height()
+    
+    start_video()
+    # app = CameraApplication(master = root)
+    root.mainloop()
