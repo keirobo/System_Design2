@@ -55,5 +55,5 @@ if __name__ == '__main__':
     canvas_h = canvas_cam.winfo_height()
     
     start_video()
-    # app = CameraApplication(master = root)
+
     root.mainloop()
