@@ -54,8 +54,31 @@ def main():
         ret, frame = cap.read()
         cv.imwrite('camera_test.jpg', frame)
         
+        #デバック用(不要時はコメントアウト)
+        frame = cv.imread("initial.jpg")
+        
         #工具判別処理
         
+        print("Now processing...")
+        #グレースケールで読み込み    
+        gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        
+        #画像のエッジ検出を行い、エッジの中を埋める
+        now_img, now_tool, now_center = TE.img_processing(gray_img)
+        
+        #デバック用に画像出力(不要時はコメントアウト)
+        cv.imwrite("test_img10.jpg", now_img)
+        cv.imwrite("test_img11.jpg", now_tool[0])
+        cv.imwrite("test_img12.jpg", now_tool[1])
+
+        print("process complete")
+        print("工具数:" + str(len(now_tool)))
+    
+        # if len(now_tool) > len(init_tool): num = len(now_tool)
+        # else: num = len(init_tool)
+        
+        # for i in range(num):
+        #     print("[", i, "]:", TE.estimation(init_tool[i], init_center[i][0], init_center[i][1], now_tool[i], now_center[i][0], now_center[i][1]))       
 
         #貸し出し OR 返却モード選択処理
         
@@ -69,6 +92,7 @@ def main():
     else:
       flag_once = 0
       # print("QRコード読み込みなし")
+
 
 if __name__ == "__main__":
   main()
