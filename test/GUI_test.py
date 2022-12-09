@@ -15,7 +15,7 @@ def start_video():
     # BGRで取得したものをRGBに変換する
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # OpenCV frame を Pillow Photo に変換(canvasに表示するにはPillowの軽視にする必要がある)
-    photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))       
+    photo = ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))       
     # canvasに画像を表示
     canvas_cam.create_image(canvas_w/2, canvas_h/2, image=photo)
     # 画像サイズをラベルに表示
