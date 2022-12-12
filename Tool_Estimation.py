@@ -102,3 +102,13 @@ def maching(i_img, n_img):
 
     print(ret)
     return ret
+#一番最初の画像と比べて、工具の貸し借りで工具数が増減しても工具の配列番号を一定にする
+#工具が借りられてないところには、ないと分かるデータを挿入する
+#   →  工具の最大数は決まっているので予めその数の工具なしデータを挿入した配列を作っておく方がいい
+#     →  そこに代入していく感じで行く
+def number_juggling(data1, data2):
+    
+    if(len(data1) > len(data2)): num = len(data1)
+    else: num = len(data2)
+
+    print(num)
