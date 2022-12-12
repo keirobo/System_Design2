@@ -3,3 +3,4 @@ config.ini
 *.pyc
 *.json
 initial_data.txt
+*.png
