@@ -94,16 +94,16 @@ if __name__ == '__main__':
     # cv2.imwrite("test_img10.jpg", now_img)
     # cv2.imwrite("test_img11.jpg", now_tool[0])
     # cv2.imwrite("test_img12.jpg", now_tool[1])
-    print(now_center)
+    # print(now_center)
 
     joblib.dump((now_img,now_tool,now_center,), open("initial_data.txt", 'wb'), compress=3)
     
-    # 読み込むとき
-    img, tool, center = joblib.load(open("initial_data.txt", 'rb'))
+    # # 読み込むとき
+    # img, tool, center = joblib.load(open("initial_data.txt", 'rb'))
 
-    cv2.imwrite("test_img10.jpg", img)
-    cv2.imwrite("test_img11.jpg", tool[0])
-    cv2.imwrite("test_img12.jpg", tool[1])
+    # cv2.imwrite("test_img10.jpg", img)
+    # cv2.imwrite("test_img11.jpg", tool[0])
+    # cv2.imwrite("test_img12.jpg", tool[1])
 
-    print(center)
+    # print(center)
 
