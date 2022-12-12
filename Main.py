@@ -6,10 +6,12 @@ import cv2 as cv
 import numpy as np
 from pyzbar.pyzbar import decode
 import time
+import joblib
 
 def main():
 
   flag_once  = 0
+  mode = False #False返却  #True貸し出し
   
   cap = cv.VideoCapture(0)
   #出力ウィンドウの設定
@@ -25,11 +27,18 @@ def main():
 
   print(key)
 
+  # 工具の初期データを読み込み
+  init_img, init_tool, init_center = joblib.load(open("initial_data.txt", 'rb'))
+
+  cv.imwrite("test_img00.jpg", init_img)
+  cv.imwrite("test_img01.jpg", init_tool[0])
+  cv.imwrite("test_img02.jpg", init_tool[1])
+
   #スプレッドシートのキーを使用してスプレッドシートを開く
   try:
     SS.init(key)
   except TimeoutError:
-    print("Error")
+    print("ERROR:スプレッドシートに接続できません。終了しています...")
 
   while(True):
     # print("main")
@@ -37,7 +46,7 @@ def main():
     ret, frame = cap.read()
     #フレームが正しく読み取られた場合、retはTrue
     if not ret:
-        print("フレームは受信できません。終了しています...")
+        print("ERROR:フレームは受信できません。終了しています...")
         break
 
     #QRコード読み込み処理
@@ -46,6 +55,7 @@ def main():
       flag_once = 1
       output = codes[0][0].decode('utf-8', 'ignore')
       print(output)
+
       #読み込み成功したら
       if 'output' != None:
         #画像撮影処理
@@ -55,7 +65,7 @@ def main():
         cv.imwrite('camera_test.jpg', frame)
         
         #デバック用(不要時はコメントアウト)
-        frame = cv.imread("initial.jpg")
+        frame = cv.imread("now.jpg")
         
         #工具判別処理
         
@@ -64,15 +74,18 @@ def main():
         gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         
         #画像のエッジ検出を行い、エッジの中を埋める
-        now_img, now_tool, now_center = TE.img_processing(gray_img)
+        now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
         
         #デバック用に画像出力(不要時はコメントアウト)
         cv.imwrite("test_img10.jpg", now_img)
-        cv.imwrite("test_img11.jpg", now_tool[0])
-        cv.imwrite("test_img12.jpg", now_tool[1])
+        cv.imwrite("test_img11.jpg", tmp_tool[0])
+        # cv.imwrite("test_img12.jpg", tmp_tool[1])
 
         print("process complete")
-        print("工具数:" + str(len(now_tool)))
+        print("現在の工具数:" + str(len(tmp_tool)))
+
+        # 工具の順番を社期の順番と合わせる
+        now_tool, now_center = TE.number_juggling(init_tool, init_center, tmp_tool, tmp_center)
     
         # if len(now_tool) > len(init_tool): num = len(now_tool)
         # else: num = len(init_tool)
