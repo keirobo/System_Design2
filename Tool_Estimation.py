@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 def img_processing(img):
     #エッジ検出
@@ -102,13 +103,38 @@ def maching(i_img, n_img):
 
     print(ret)
     return ret
+
+
 #一番最初の画像と比べて、工具の貸し借りで工具数が増減しても工具の配列番号を一定にする
 #工具が借りられてないところには、ないと分かるデータを挿入する
 #   →  工具の最大数は決まっているので予めその数の工具なしデータを挿入した配列を作っておく方がいい
 #     →  そこに代入していく感じで行く
-def number_juggling(data1, data2):
-    
-    if(len(data1) > len(data2)): num = len(data1)
-    else: num = len(data2)
+def number_juggling(init_data, init_center, now_data, now_center):
+    n_tool = ["none"] * len(init_data)
+    n_center = ["none"] * len(init_data)
+    data = "none"
 
-    print(num)
+    min_dist = math.sqrt((init_center[0][0] - now_center[0][0]) ** 2 + (init_center[0][1] - now_center[0][1]) ** 2)
+    
+    for i in range(len(now_data)):
+        now_x = now_center[i][0]
+        now_y = now_center[i][1]
+        for j in range(len(init_data)):
+            init_x = init_center[j][0]
+            init_y = init_center[j][1]
+
+            tmp = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
+
+            if(min_dist >= tmp): 
+                min_dist = tmp
+                data = j
+        
+        if(data != "none"):
+            n_tool[data] = now_data[i]
+            n_center[data] = now_center[i]
+        
+        data = "none"
+    
+    return n_tool, n_center
+        
+    
