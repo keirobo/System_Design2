@@ -38,7 +38,7 @@ def main():
   try:
     SS.init(key)
   except TimeoutError:
-    print("ERROR:スプレッドシートに接続できません。終了しています...")
+    print("[ERROR/SS] スプレッドシートに接続できません。終了しています...")
 
   while(True):
     # print("main")
@@ -46,7 +46,7 @@ def main():
     ret, frame = cap.read()
     #フレームが正しく読み取られた場合、retはTrue
     if not ret:
-        print("ERROR:フレームは受信できません。終了しています...")
+        print("[ERROR] フレームは受信できません。終了しています...")
         break
 
     #QRコード読み込み処理
@@ -65,7 +65,7 @@ def main():
         cv.imwrite('camera_test.jpg', frame)
         
         #デバック用(不要時はコメントアウト)
-        frame = cv.imread("now.jpg")
+        frame = cv.imread("initial.jpg")
         
         #工具判別処理
         
@@ -84,16 +84,13 @@ def main():
         print("process complete")
         print("現在の工具数:" + str(len(tmp_tool)))
 
-        # 工具の順番を社期の順番と合わせる
+        # 今の工具の順番を初期の画像の順番と合わせる
         now_tool, now_center = TE.number_juggling(init_tool, init_center, tmp_tool, tmp_center)
-    
-        # if len(now_tool) > len(init_tool): num = len(now_tool)
-        # else: num = len(init_tool)
-        
-        # for i in range(num):
-        #     print("[", i, "]:", TE.estimation(init_tool[i], init_center[i][0], init_center[i][1], now_tool[i], now_center[i][0], now_center[i][1]))       
 
-        #貸し出し OR 返却モード選択処理
+        print(now_center)
+
+        # 前回の工具の画像と順番に比較していって、
+        # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
         
 
         #スプレッドシート書き込み処理
