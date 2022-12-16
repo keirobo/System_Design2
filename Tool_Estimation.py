@@ -113,25 +113,34 @@ def number_juggling(init_data, init_center, now_data, now_center):
     n_tool = ["none"] * len(init_data)
     n_center = ["none"] * len(init_data)
     data = "none"
-
+    
+    # 初期画像と現在の画像の中心間距離を格納する変数を0番目で初期化
     min_dist = math.sqrt((init_center[0][0] - now_center[0][0]) ** 2 + (init_center[0][1] - now_center[0][1]) ** 2)
     
+    # 現在画像側のループ
     for i in range(len(now_data)):
         now_x = now_center[i][0]
         now_y = now_center[i][1]
+        # 初期画像側のループ
         for j in range(len(init_data)):
             init_x = init_center[j][0]
             init_y = init_center[j][1]
-
+            
+            # 初期画像と現在画像の中心間距離の計算
             tmp = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
-
-            if(min_dist >= tmp): 
+            
+            # 今格納されている値よりも小さければ値を更新
+            if(min_dist >= tmp):
                 min_dist = tmp
                 data = j
         
+        # 最終的にreturnするデータの格納
         if(data != "none"):
-            n_tool[data] = now_data[i]
-            n_center[data] = now_center[i]
+            if(n_tool[data] == "none" and n_center[data] == "none"):
+                n_tool[data] = now_data[i]
+                n_center[data] = now_center[i]
+            else:
+                print("[ERROR] データ重複") #データの位置が被ったときにどうしよう、対策が必要
         
         data = "none"
     
