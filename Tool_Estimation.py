@@ -78,7 +78,7 @@ def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
     if abs(i_x - n_x) < 100 and abs(i_y - n_y) < 100:
         ret = maching(i_tool, n_tool)
 
-        if(abs(ret) < 20):
+        if abs(ret) < 20 :
             return ret, True
         else:
             return ret, False
@@ -130,17 +130,17 @@ def number_juggling(init_data, init_center, now_data, now_center):
             tmp = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
             
             # 今格納されている値よりも小さければ値を更新
-            if(min_dist >= tmp):
+            if min_dist >= tmp:
                 min_dist = tmp
                 data = j
         
         # 最終的にreturnするデータの格納
-        if(data != "none"):
+        if data != "none":
             if(n_tool[data] == "none" and n_center[data] == "none"):
                 n_tool[data] = now_data[i]
                 n_center[data] = now_center[i]
             else:
-                print("[ERROR] データ重複") #データの位置が被ったときにどうしよう、対策が必要
+                print("[ERROR/TE] データ重複") #データの位置が被ったときにどうしよう、対策が必要
         
         data = "none"
     
