@@ -85,7 +85,7 @@ def main():
         print("現在の工具数:" + str(len(tmp_tool)))
 
         # 今の工具の順番を初期の画像の順番と合わせる
-        now_tool, now_center = TE.number_juggling(init_tool, init_center, tmp_tool, tmp_center)
+        now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
 
         print(now_center)
 
