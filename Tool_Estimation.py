@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import math
+import random
+import Spreadsheet as SS
 
 def img_processing(img):
   #エッジ検出
@@ -73,6 +75,7 @@ def img_processing(img):
     # cv2.putText(color_src01, "Y: " + str(int(center[i][1])), (x1 - 20, y1 + 45), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))  
   return color_src01, tool, center
 
+
 def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
   if abs(i_x - n_x) < 100 and abs(i_y - n_y) < 100:
     ret = maching(i_tool, n_tool)
@@ -83,6 +86,7 @@ def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
       return ret, False
   else:
     return False
+
 
 def maching(img1, img2):
   # OBR 特徴量検出器を作成する。
@@ -114,6 +118,8 @@ def maching(img1, img2):
   dst = cv2.drawMatches(img1, kp1, img2, kp2, good_matches, None)
   cv2.imwrite("test.jpg", dst)
 
+  return ret
+
 
 #一番最初の画像と比べて、工具の貸し借りで工具数が増減しても工具の配列番号を一定にする
 def number_sequencing(init_data, init_center, now_data, now_center):
@@ -123,7 +129,6 @@ def number_sequencing(init_data, init_center, now_data, now_center):
   
   # 初期画像と現在の画像の中心間距離を格納する変数を0番目で初期化
   min_dist = math.sqrt((init_center[0][0] - now_center[0][0]) ** 2 + (init_center[0][1] - now_center[0][1]) ** 2)
-  min_ret = maching(init_data, now_data)
   
   # 現在画像側のループ
   for i in range(len(now_data)):
@@ -136,11 +141,9 @@ def number_sequencing(init_data, init_center, now_data, now_center):
         
       # 初期画像と現在画像の中心間距離の計算
       tmp_dist = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
-      ret = maching(init_data, now_data)
       
       # 今格納されている値よりも小さければ値を更新
-      if min_dist >= tmp_dist and abs(ret) < 20:
-        min_dist = tmp_dist
+      if min_dist >= tmp_dist:
         data = j
       
     # 最終的にreturnするデータの格納
@@ -155,17 +158,38 @@ def number_sequencing(init_data, init_center, now_data, now_center):
   
   return n_tool, n_center
 
+
 def comparison(past_tool, past_center, now_tool, now_center):
     
   for i in range(len(past_tool)):
     # 返却処理
-    if past_center == "none" and now_center != "none":
+    if (past_center[i] == "none") and (now_center[i] != "none"):
       print("返却処理")
+      return_tool()
 
     # 貸し出し処理  
-    elif past_center != "none" and now_center == "none":
+    elif (past_center[i] != "none") and (now_center[i] == "none"):
       print("貸し出し処理")
+      lend_tool()
     
     # 変化なし
     else:
-      print("変化なし")
+      ret = maching(past_tool[i], now_tool[i])
+      if(ret > 10):
+        print("工具が違う")
+        
+        rand_id = random.randint()
+        slack_id = SS.get_slack_id(rand_id)
+        
+      else:
+        print("変化なし")
+
+
+
+
+def return_tool():
+  print("工具返却")
+
+
+def lend_tool():
+  print("工具貸し出し")
