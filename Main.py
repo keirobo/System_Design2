@@ -61,10 +61,7 @@ def main():
   except TimeoutError:
     print("[ERROR/SS] スプレッドシートに接続できません。終了しています...")
   
-  print("QRコードをかざしてください")
-  
-  # SS.get_slack_id(1, workbook)
-  # SS.get_max_id(workbook)
+  print("QRコードをかざしてください") 
 
   while(True):
     # print("main")
@@ -117,7 +114,7 @@ def main():
 
         # 前回の工具の画像と順番に比較していって
         # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-        TE.comparison(past_tool, past_center, now_tool, now_center)
+        TE.comparison(past_tool, past_center, now_tool, now_center, workbook)
 
         #スプレッドシート書き込み処理
         
