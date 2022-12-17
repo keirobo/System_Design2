@@ -34,9 +34,14 @@ def main():
 
   # 工具の初期データを読み込み
   init_img, init_tool, init_center = joblib.load(open("initial_data.txt", 'rb'))
-
+  
+  past_img = init_img
   past_tool = init_tool
   past_center = init_center
+  
+  # print(past_center)
+  # print(past_img)
+  # print(init_img)
 
   print("データ取得完了")
 
@@ -44,15 +49,22 @@ def main():
   # cv.imwrite("test_img01.jpg", init_tool[0])
   # cv.imwrite("test_img02.jpg", init_tool[1])
 
+  # cv.imwrite("test_img100.jpg", past_img)
+  # cv.imwrite("test_img101.jpg", past_tool[0])
+  # cv.imwrite("test_img102.jpg", past_tool[1])
+
   #スプレッドシートのキーを使用してスプレッドシートを開く
   print("スプレッドシートへの接続中...")
   try:
-    SS.init(key)
+    workbook = SS.init(key)
     print("スプレッドシートへの接続完了")
   except TimeoutError:
     print("[ERROR/SS] スプレッドシートに接続できません。終了しています...")
   
   print("QRコードをかざしてください")
+  
+  # SS.get_slack_id(1, workbook)
+  # SS.get_max_id(workbook)
 
   while(True):
     # print("main")
@@ -103,7 +115,7 @@ def main():
 
         print(now_center)
 
-        # 前回の工具の画像と順番に比較していって、
+        # 前回の工具の画像と順番に比較していって
         # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
         TE.comparison(past_tool, past_center, now_tool, now_center)
 
