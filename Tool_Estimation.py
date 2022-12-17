@@ -84,25 +84,6 @@ def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
   else:
     return False
 
-# def maching(i_img, n_img):
-#   target_img = i_img
-#   bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-#   # detector = cv2.ORB_create()
-#   detector = cv2.AKAZE_create()
-#   target_kp, target_des = detector.detectAndCompute(target_img, None)
-    
-#   try:
-#     comparing_img = n_img
-#     comparing_kp, comparing_des = detector.detectAndCompute(comparing_img, None)
-#     matches = bf.match(target_des, comparing_des)
-#     dist = [m.distance for m in matches]
-#     ret = sum(dist) / len(dist)
-#   except cv2.error:
-#     ret = "none"  
-
-#   print(ret)
-#   return ret
-
 def maching(img1, img2):
   # OBR 特徴量検出器を作成する。
   detector = cv2. ORB_create()
