@@ -3,6 +3,7 @@ import numpy as np
 import math
 import random
 import Spreadsheet as SS
+import SlackBot as SB
 
 def img_processing(img):
   #エッジ検出
@@ -177,14 +178,21 @@ def comparison(past_tool, past_center, now_tool, now_center):
       ret = maching(past_tool[i], now_tool[i])
       if(ret > 10):
         print("工具が違う")
-        
-        rand_id = random.randint()
+
+        max_id = SS.get_max_id()
+        rand_id = random.randint(1, max_id)
+        print("rand_id:" + str(rand_id))
         slack_id = SS.get_slack_id(rand_id)
+
+        name = SS.get_name(rand_id)
+        tool_name = SS.get_tool_name(i)
+
+        message = "工具ID [" + str(i) + "]:" + tool_name + "が違う工具になっています" + name + "さんが代表して確認をお願いします"
+
+        SB.write_DM(slack_id, message)
         
       else:
         print("変化なし")
-
-
 
 
 def return_tool():
