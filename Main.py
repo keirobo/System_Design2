@@ -54,10 +54,11 @@ def main():
   # cv.imwrite("test_img102.jpg", past_tool[1])
 
   #スプレッドシートのキーを使用してスプレッドシートを開く
-  print("スプレッドシートへの接続中...")
+  print("スプレッドシートとSlackBotの設定中...")
   try:
-    workbook = SS.init(key)
-    print("スプレッドシートへの接続完了")
+    SS.init(key)
+    SB.init(slack_token)
+    print("スプレッドシートとSlackBotの設定完了")
   except TimeoutError:
     print("[ERROR/SS] スプレッドシートに接続できません。終了しています...")
   
@@ -114,7 +115,7 @@ def main():
 
         # 前回の工具の画像と順番に比較していって
         # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-        TE.comparison(past_tool, past_center, now_tool, now_center, workbook)
+        TE.comparison(past_tool, past_center, now_tool, now_center)
 
         #スプレッドシート書き込み処理
         
