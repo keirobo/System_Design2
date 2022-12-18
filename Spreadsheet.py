@@ -34,7 +34,7 @@ def get_slack_id(id):
   # print(tmp1)
   # print(tmp2)
   
-  print(str(tmp1.row) + " " + str(tmp2.col))
+  # print(str(tmp1.row) + " " + str(tmp2.col))
 
   return worksheet.cell(tmp1.row, tmp2.col).value
 
@@ -42,8 +42,30 @@ def get_slack_id(id):
 def get_max_id():
   worksheet = workbook.worksheet('ユーザー情報')
   
-  tmp = worksheet.find("ユーザーID")
+  tmp1 = worksheet.find("ユーザーID")
+  data = worksheet.col_values(tmp1.col)
   
-  data = worksheet.col_values(tmp.col)
+  data.pop(0)
+  data = [int(i) for i in data]
 
-  print(data)
+  max_id = max(data)
+
+  return max_id
+
+
+def get_name(id):
+  worksheet = workbook.worksheet('ユーザー情報')
+  
+  tmp1 = worksheet.find(str(id))
+  tmp2 = worksheet.find("氏名")
+
+  return worksheet.cell(tmp1.row, tmp2.col).value
+  
+
+def get_tool_name(id):
+  worksheet = workbook.worksheet('工具情報')
+  
+  tmp1 = worksheet.find(str(id+1))
+  tmp2 = worksheet.find("工具名")
+
+  return worksheet.cell(tmp1.row, tmp2.col).value
