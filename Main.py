@@ -90,7 +90,7 @@ def main():
         cv.imwrite('camera_test.jpg', frame)
         
         #デバック用(不要時はコメントアウト)
-        frame = cv.imread("initial.jpg")
+        frame = cv.imread("now.jpg")
         
         #工具判別処理
         
@@ -102,8 +102,8 @@ def main():
         now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
         
         #デバック用に画像出力(不要時はコメントアウト)
-        cv.imwrite("test_img10.jpg", now_img)
-        cv.imwrite("test_img11.jpg", tmp_tool[0])
+        # cv.imwrite("test_img10.jpg", now_img)
+        # cv.imwrite("test_img11.jpg", tmp_tool[0])
         # cv.imwrite("test_img12.jpg", tmp_tool[1])
 
         print("現在の工具数:" + str(len(tmp_tool)))
@@ -115,14 +115,7 @@ def main():
 
         # 前回の工具の画像と順番に比較していって
         # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-        TE.comparison(past_tool, past_center, now_tool, now_center)
-
-        #スプレッドシート書き込み処理
-        
-
-        # user_id = SS.get_user_id(output)
-
-        # if(str(user_id).startswith('None') == False): SB.write(Slack_Token, user_id)
+        TE.comparison(output[0], past_tool, past_center, now_tool, now_center)
         
         #今回の値を次回に引き継ぎ
         past_tool = now_tool

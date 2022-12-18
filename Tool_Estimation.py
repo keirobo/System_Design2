@@ -91,7 +91,7 @@ def estimation(i_tool, i_x, i_y, n_tool, n_x, n_y):
 
 def maching(img1, img2):
   # OBR 特徴量検出器を作成する。
-  detector = cv2. ORB_create()
+  detector = cv2.AKAZE_create()
   
   # 特徴点を検出する。
   kp1, desc1 = detector.detectAndCompute(img1, None)
@@ -113,11 +113,11 @@ def maching(img1, img2):
   dist = [m.distance for m in good_matches]
       
   ret = sum(dist) / len(dist)
-  print(ret)
+  print("ret:" + str(ret))
           
   # マッチング結果を描画する。
   dst = cv2.drawMatches(img1, kp1, img2, kp2, good_matches, None)
-  cv2.imwrite("test.jpg", dst)
+  # cv2.imwrite("test.jpg", dst)
 
   return ret
 
@@ -160,44 +160,43 @@ def number_sequencing(init_data, init_center, now_data, now_center):
   return n_tool, n_center
 
 
-def comparison(past_tool, past_center, now_tool, now_center):
+def comparison(id, past_tool, past_center, now_tool, now_center):
     
   for i in range(len(past_tool)):
     # 返却処理
-    if (past_center[i] == "none") and (now_center[i] != "none"):
+    if((np.isin(['none'], past_center[i]) == True) and (np.isin(['none'], now_center[i]) != True)):
       print("返却処理")
-      return_tool()
+      ret = maching(past_tool[i], now_tool[i])
+      if(ret <= 20):
+        # return_tool(id, i, past_tool[i], now_tool[i])
+        SS.write_return(id, i)
+      else:
+        different_tool(i)
 
     # 貸し出し処理  
-    elif (past_center[i] != "none") and (now_center[i] == "none"):
+    elif((np.isin(['none'], past_center[i]) != True) and (np.isin(['none'], now_center[i]) == True)):
       print("貸し出し処理")
-      lend_tool()
+      SS.write_lend(id, i)
     
     # 変化なし
     else:
       ret = maching(past_tool[i], now_tool[i])
-      if(ret > 10):
-        print("工具が違う")
-
-        max_id = SS.get_max_id()
-        rand_id = random.randint(1, max_id)
-        print("rand_id:" + str(rand_id))
-        slack_id = SS.get_slack_id(rand_id)
-
-        name = SS.get_name(rand_id)
-        tool_name = SS.get_tool_name(i)
-
-        message = "工具ID [" + str(i) + "]:" + tool_name + "が違う工具になっています" + name + "さんが代表して確認をお願いします"
-
-        SB.write_DM(slack_id, message)
-        
+      #違う工具と判別された場合はランダムに指定して確認をお願いする
+      if(ret > 20):
+        different_tool(i)
       else:
         print("変化なし")
 
 
-def return_tool():
-  print("工具返却")
+def different_tool(tool_id):
+  print("工具が違う")
 
+  max_id = SS.get_max_id()
+  rand_id = random.randint(1, max_id)
+  print("rand_id:" + str(rand_id))
+  slack_id = SS.get_slack_id(rand_id)
 
-def lend_tool():
-  print("工具貸し出し")
+  name = SS.get_name(rand_id)
+  tool_name = SS.get_tool_name(tool_id)
+  message = "工具ID [" + str(tool_id) + "]:" + tool_name + "が違う工具になっています" + name + "さんが代表して確認をお願いします"
+  SB.write_DM(slack_id, message)

@@ -2,6 +2,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import re
 import wrapt_timeout_decorator
+import datetime
 
 # @wrapt_timeout_decorator.timeout(dec_timeout=10)
 def init(key):
@@ -69,3 +70,31 @@ def get_tool_name(id):
   tmp2 = worksheet.find("工具名")
 
   return worksheet.cell(tmp1.row, tmp2.col).value
+
+
+def write_return(user_id, tool_id):
+  worksheet = workbook.worksheet('貸し出し情報')
+  
+  tmp1 = worksheet.find("ユーザーID")
+  write_row = (len(worksheet.col_values(tmp1.col)) + 1)
+  # print(write_row)
+  time = datetime.datetime.now()
+  
+  worksheet.update_cell(write_row, 1, str(user_id))
+  worksheet.update_cell(write_row, 2, str(tool_id+1))
+  worksheet.update_cell(write_row, 3, str(time))
+  worksheet.update_cell(write_row, 4, str(0))
+
+
+def write_lend(user_id, tool_id):
+  worksheet = workbook.worksheet('貸し出し情報')
+  
+  tmp1 = worksheet.find("ユーザーID")
+  write_row = (len(worksheet.col_values(tmp1.col)) + 1)
+  # print(write_row)
+  time = datetime.datetime.now()
+  
+  worksheet.update_cell(write_row, 1, str(user_id))
+  worksheet.update_cell(write_row, 2, str(tool_id+1))
+  worksheet.update_cell(write_row, 3, str(time))
+  worksheet.update_cell(write_row, 4, str(1))
