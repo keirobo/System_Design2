@@ -7,6 +7,7 @@ import numpy as np
 # from pyzbar.pyzbar import decode
 import time
 import joblib
+import datetime
 
 def main():
 
@@ -75,57 +76,61 @@ def main():
 
     #QRコード読み込み処理
     # codes = decode(frame)
-    output = detector.detectAndDecode(frame)
+    try:
+      output = detector.detectAndDecode(frame)
+  
+      if output[0] != "" and flag_once == 0:
+        flag_once = 1
+        last_time = datetime.datetime.now()
+        print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
 
-    if output[0] != "" and flag_once == 0:
-      flag_once = 1
-      print(output[0])
-
-      #読み込み成功したら
-      if 'output' != None:
-        #画像撮影処理
-        time.sleep(1.5)
-        
-        ret, frame = cap.read()
-        cv.imwrite('camera_test.jpg', frame)
-        
-        #デバック用(不要時はコメントアウト)
-        frame = cv.imread("now.jpg")
-        
-        #工具判別処理
-        
-        print("処理中")
-        #グレースケールで読み込み    
-        gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        
-        #画像のエッジ検出を行い、エッジの中を埋める
-        now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
-        
-        #デバック用に画像出力(不要時はコメントアウト)
-        # cv.imwrite("test_img10.jpg", now_img)
-        # cv.imwrite("test_img11.jpg", tmp_tool[0])
-        # cv.imwrite("test_img12.jpg", tmp_tool[1])
-
-        print("現在の工具数:" + str(len(tmp_tool)))
-
-        # 今の工具の順番を初期の画像の順番と合わせる
-        now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
-
-        print(now_center)
-
-        # 前回の工具の画像と順番に比較していって
-        # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-        TE.comparison(output[0], past_tool, past_center, now_tool, now_center)
-        
-        #今回の値を次回に引き継ぎ
-        past_tool = now_tool
-        past_center = now_center
-
-        print("処理完了")
-        print("QRコードをかざしてください")
-    else:
-      flag_once = 0
-      # print("QRコード読み込みなし")
+        #読み込み成功したら
+        if 'output' != None:
+          #画像撮影処理
+          time.sleep(1.5)
+          
+          ret, frame = cap.read()
+          cv.imwrite('camera_test.jpg', frame)
+          
+          #デバック用(不要時はコメントアウト)
+          frame = cv.imread("now.jpg")
+          
+          #工具判別処理
+          
+          print("処理中")
+          #グレースケールで読み込み    
+          gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+          
+          #画像のエッジ検出を行い、エッジの中を埋める
+          now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
+          
+          #デバック用に画像出力(不要時はコメントアウト)
+          # cv.imwrite("test_img10.jpg", now_img)
+          # cv.imwrite("test_img11.jpg", tmp_tool[0])
+          # cv.imwrite("test_img12.jpg", tmp_tool[1])
+  
+          print("現在の工具数:" + str(len(tmp_tool)))
+  
+          # 今の工具の順番を初期の画像の順番と合わせる
+          now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
+  
+          print(now_center)
+  
+          # 前回の工具の画像と順番に比較していって
+          # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
+          TE.comparison(output[0], past_tool, past_center, now_tool, now_center, last_time)
+          
+          #今回の値を次回に引き継ぎ
+          past_tool = now_tool
+          past_center = now_center
+  
+          print("処理完了")
+          print("QRコードをかざしてください")
+      else:
+        flag_once = 0
+        # print("QRコード読み込みなし")
+    except cv.error:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
+      print("error出たよ")
 
 
 if __name__ == "__main__":

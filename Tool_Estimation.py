@@ -160,7 +160,7 @@ def number_sequencing(init_data, init_center, now_data, now_center):
   return n_tool, n_center
 
 
-def comparison(id, past_tool, past_center, now_tool, now_center):
+def comparison(id, past_tool, past_center, now_tool, now_center, time):
     
   for i in range(len(past_tool)):
     # 返却処理
@@ -169,21 +169,24 @@ def comparison(id, past_tool, past_center, now_tool, now_center):
       ret = maching(past_tool[i], now_tool[i])
       if(ret <= 20):
         # return_tool(id, i, past_tool[i], now_tool[i])
-        SS.write_return(id, i)
+        SS.write_return(id, i, time)
       else:
         different_tool(i)
 
     # 貸し出し処理  
     elif((np.isin(['none'], past_center[i]) != True) and (np.isin(['none'], now_center[i]) == True)):
       print("貸し出し処理")
-      SS.write_lend(id, i)
+      SS.write_lend(id, i, time)
     
     # 変化なし
     else:
-      ret = maching(past_tool[i], now_tool[i])
-      #違う工具と判別された場合はランダムに指定して確認をお願いする
-      if(ret > 20):
-        different_tool(i)
+      if(np.isin(['none'], past_center[i]) != True) and (np.isin(['none'], now_center[i]) != True):
+        ret = maching(past_tool[i], now_tool[i])
+        #違う工具と判別された場合はランダムに指定して確認をお願いする
+        if(ret > 20):
+          different_tool(i)
+        else:
+          print("変化なし")
       else:
         print("変化なし")
 
