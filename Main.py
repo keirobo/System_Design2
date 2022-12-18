@@ -9,10 +9,12 @@ import time
 import joblib
 import datetime
 
+INTERVAL = 1 #[minute]
+
 def main():
 
   flag_once  = 0
-  mode = False #False返却  #True貸し出し
+  last_time = datetime.datetime.now()
   
   print("カメラ起動中...")
   cap = cv.VideoCapture(0)
@@ -79,7 +81,7 @@ def main():
     try:
       output = detector.detectAndDecode(frame)
   
-      if output[0] != "" and flag_once == 0:
+      if output[0] != "" and flag_once == 0 or time_comparison(last_time):
         flag_once = 1
         last_time = datetime.datetime.now()
         print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
@@ -131,6 +133,13 @@ def main():
         # print("QRコード読み込みなし")
     except cv.error:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
       print("error出たよ")
+
+
+def time_comparison(last_time):
+  now_time = datetime.datetime.now()
+
+  if now_time > last_time + datetime.timedelta(minutes = INTERVAL): return True
+  else: return False
 
 
 if __name__ == "__main__":
