@@ -1,6 +1,6 @@
 import cv2
 
-img1 = cv2.imread("test_img01.jpg")
+img1 = cv2.imread("test_img02.jpg")
 img2 = cv2.imread("test_img12.jpg")
 
 # OBR 特徴量検出器を作成する。
