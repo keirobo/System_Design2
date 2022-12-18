@@ -9,6 +9,7 @@ def get_user_id(token):
     print(member['id'])
     print()
 
+
 def write(token, user_id):
   print("write")
   client = WebClient(token)
