@@ -1,7 +1,11 @@
 from slack_sdk import WebClient
 
-def get_user_id(token):
-  client = WebClient(token)
+def init(_token):
+  global token
+  token = _token
+
+def get_user_id():
+  client = WebClient()
   res = client.users_list()
 
   for member in res['members']:
@@ -10,7 +14,7 @@ def get_user_id(token):
     print()
 
 
-def write(token, user_id):
+def write_DM(user_id, message):
   print("write")
   client = WebClient(token)
   
@@ -19,4 +23,4 @@ def write(token, user_id):
   dm_id = res['channel']['id']
   
   # DMを送信する
-  client.chat_postMessage(channel=dm_id, text='DMです')
+  client.chat_postMessage(channel=dm_id, text=message)
