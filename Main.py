@@ -4,13 +4,11 @@ import Spreadsheet as SS
 import configparser
 import cv2 as cv
 import numpy as np
-# from pyzbar.pyzbar import decode
 import time
 import joblib
 import datetime
 
 INTERVAL = 10 #[minute]
-# MODE = 1 #なら一定時間ごとに返却通知、0なら指定時間に通知
 notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 
 def main():
@@ -43,10 +41,6 @@ def main():
   past_img = init_img
   past_tool = init_tool
   past_center = init_center
-  
-  # print(past_center)
-  # print(past_img)
-  # print(init_img)
 
   print("データ取得完了")
 
@@ -81,7 +75,6 @@ def main():
     judge_notice()
 
     #QRコード読み込み処理
-    # codes = decode(frame)
     try:
       output = detector.detectAndDecode(frame)
   
@@ -111,9 +104,9 @@ def main():
           now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
           
           #デバック用に画像出力(不要時はコメントアウト)
-          cv.imwrite("test_img10.jpg", now_img)
-          cv.imwrite("test_img11.jpg", tmp_tool[0])
-          # cv.imwrite("test_img12.jpg", tmp_tool[1])
+          # cv.imwrite("test_img10.jpg", now_img)
+          # cv.imwrite("test_img11.jpg", tmp_tool[0])
+          # # cv.imwrite("test_img12.jpg", tmp_tool[1])
   
           print("現在の工具数:" + str(len(tmp_tool)))
   
@@ -134,7 +127,6 @@ def main():
           print("QRコードをかざしてください")
       else:
         flag_once = 0
-        # print("QRコード読み込みなし")
 
     except cv.error:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
       print("error出たよ")
