@@ -25,12 +25,12 @@ def write_DM(user_id, message):
   # DMを送信する
   client.chat_postMessage(channel=dm_id, text=message)
 
-def notice_channel():
+def write_channel(slack_chan, massage):
   print("write")
   client = WebClient(token)
   
   # DMを送信する
   client.chat_postMessage(
-    channel="#random",
-    text=":wave: こんにちは！",
+    channel = slack_chan,
+    text = massage,
   )
