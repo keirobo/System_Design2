@@ -11,7 +11,7 @@ import datetime
 
 INTERVAL = 10 #[minute]
 # MODE = 1 #なら一定時間ごとに返却通知、0なら指定時間に通知
-notice_time = [["12:00", "17:00"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
+notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 
 def main():
 
@@ -159,9 +159,7 @@ def judge_notice():
 
       if (hour == 0) and (minute <= 10) and (notice_time[1][i] == False): # 指定時間+10分以内
         print("通知")
-        print(now_time)
-        print(comparison_time)
-        print(minute)
+        SB.write_channel("#random", "時間です。使用していない工具は一旦返却しましょう!")
         
         notice_time[1][i] = True
         if len(notice_time[0])-1 >= i+1:
