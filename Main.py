@@ -9,7 +9,9 @@ import time
 import joblib
 import datetime
 
-INTERVAL = 1 #[minute]
+INTERVAL = 10 #[minute]
+# MODE = 1 #なら一定時間ごとに返却通知、0なら指定時間に通知
+notice_time = [["12:00", "12:11", "12:21"] ,[False, False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 
 def main():
 
@@ -48,9 +50,9 @@ def main():
 
   print("データ取得完了")
 
-  # cv.imwrite("test_img00.jpg", init_img)
-  # cv.imwrite("test_img01.jpg", init_tool[0])
-  # cv.imwrite("test_img02.jpg", init_tool[1])
+  cv.imwrite("test_img00.jpg", init_img)
+  cv.imwrite("test_img01.jpg", init_tool[0])
+  cv.imwrite("test_img02.jpg", init_tool[1])
 
   # cv.imwrite("test_img100.jpg", past_img)
   # cv.imwrite("test_img101.jpg", past_tool[0])
@@ -76,12 +78,14 @@ def main():
         print("[ERROR] フレームは受信できません。終了しています...")
         break
 
+    judge_notice()
+
     #QRコード読み込み処理
     # codes = decode(frame)
     try:
       output = detector.detectAndDecode(frame)
   
-      if output[0] != "" and flag_once == 0 or time_comparison(last_time):
+      if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
         flag_once = 1
         last_time = datetime.datetime.now()
         print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
@@ -107,8 +111,8 @@ def main():
           now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
           
           #デバック用に画像出力(不要時はコメントアウト)
-          # cv.imwrite("test_img10.jpg", now_img)
-          # cv.imwrite("test_img11.jpg", tmp_tool[0])
+          cv.imwrite("test_img10.jpg", now_img)
+          cv.imwrite("test_img11.jpg", tmp_tool[0])
           # cv.imwrite("test_img12.jpg", tmp_tool[1])
   
           print("現在の工具数:" + str(len(tmp_tool)))
@@ -131,6 +135,7 @@ def main():
       else:
         flag_once = 0
         # print("QRコード読み込みなし")
+
     except cv.error:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
       print("error出たよ")
 
@@ -140,6 +145,25 @@ def time_comparison(last_time):
 
   if now_time > last_time + datetime.timedelta(minutes = INTERVAL): return True
   else: return False
+
+def judge_notice():
+  now_time = datetime.datetime.now()
+
+  for i in range(len(notice_time[0])):
+    divided_time = notice_time[0][i].split(':')
+    comparison_time = now_time.replace(hour=int(divided_time[0]), minute=int(divided_time[1]), second=0, microsecond=0)
+
+    if now_time > comparison_time: # 指定時間を過ぎた
+      minute = now_time.minute - comparison_time.minute
+
+      if(minute <= 10 and notice_time[1][i] == False): # 指定時間+10分以内
+        print("通知")
+        
+        notice_time[1][i] = True
+        if len(notice_time[0])-1 >= i+1:
+          notice_time[1][i+1] = False
+        else:
+          notice_time[1][0] = False
 
 
 if __name__ == "__main__":
