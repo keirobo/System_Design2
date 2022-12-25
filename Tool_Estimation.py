@@ -128,24 +128,31 @@ def number_sequencing(init_data, init_center, now_data, now_center):
   n_center = ["none"] * len(init_data)
   data = "none"
   
-  # 初期画像と現在の画像の中心間距離を格納する変数を0番目で初期化
-  min_dist = math.sqrt((init_center[0][0] - now_center[0][0]) ** 2 + (init_center[0][1] - now_center[0][1]) ** 2)
-  
   # 現在画像側のループ
   for i in range(len(now_data)):
     now_x = now_center[i][0]
     now_y = now_center[i][1]
+    # 初期画像と現在の画像の中心間距離を格納する変数を0番目で初期化
+    min_dist = math.sqrt((init_center[i][0] - now_center[0][0]) ** 2 + (init_center[i][1] - now_center[0][1]) ** 2)
     # 初期画像側のループ
     for j in range(len(init_data)):
       init_x = init_center[j][0]
       init_y = init_center[j][1]
+      # print("i:" + str(i) + "j:" + str(j))
+      # print("x:"+ str(now_x) + ", y:" + str(now_y))
+      # print("x:"+ str(init_x) + ", y:" + str(init_y))
         
       # 初期画像と現在画像の中心間距離の計算
       tmp_dist = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
+
+      # print("tmp_dist:" + str(tmp_dist) + ", min_dist:" + str(min_dist))
       
       # 今格納されている値よりも小さければ値を更新
       if min_dist >= tmp_dist:
         data = j
+        min_dist = tmp_dist
+      
+      # print("data:" + str(data))
       
     # 最終的にreturnするデータの格納
     if data != "none":
