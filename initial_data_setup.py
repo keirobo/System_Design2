@@ -15,10 +15,11 @@ def img_processing(img):
     # 二値変換
     # 前処理を使用しなかった場合は、blur_srcではなくgray_srcに書き換えるする
     mono_src = cv2.threshold(blur_src, 48, 255, cv2.THRESH_BINARY_INV)[1]
-    # ラベリング結果書き出し用に二値画像をカラー変換
-    
+  
+    #エッジ検出
     th, src_th = cv2.threshold(mono_src, 220, 255, cv2.THRESH_BINARY_INV)
-     
+    cv2.imwrite("img1.jpg", src_th)
+
     # Copy the thresholded image.
     im_floodfill = src_th.copy()
      
@@ -73,7 +74,7 @@ def img_processing(img):
         # # # 各オブジェクトの重心座標を黄文字で表示
         # cv2.putText(color_src01, "X: " + str(int(center[i][0])), (x1 - 20, y1 + 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
         # cv2.putText(color_src01, "Y: " + str(int(center[i][1])), (x1 - 20, y1 + 45), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
-
+        
     return color_src01, tool, center
 
 if __name__ == '__main__':
@@ -90,7 +91,10 @@ if __name__ == '__main__':
 
     now_img, now_tool, now_center = img_processing(gray_img)
     
+    cv2.imwrite("test_img.jpg", now_img)
     #デバック用
+    for i in range(len(now_tool)):
+        cv2.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
     # cv2.imwrite("test_img10.jpg", now_img)
     # cv2.imwrite("test_img11.jpg", now_tool[0])
     # cv2.imwrite("test_img12.jpg", now_tool[1])

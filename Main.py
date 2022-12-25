@@ -92,7 +92,7 @@ def main():
           cv.imwrite('camera_test.jpg', frame)
           
           #デバック用(不要時はコメントアウト)
-          frame = cv.imread("now.jpg")
+          frame = cv.imread("initial.jpg")
           
           #工具判別処理
           
@@ -103,10 +103,15 @@ def main():
           #画像のエッジ検出を行い、エッジの中を埋める
           now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
           
-          #デバック用に画像出力(不要時はコメントアウト)
+          #デバック用に画像出力(不要時はコメントアウト) 
           # cv.imwrite("test_img10.jpg", now_img)
           # cv.imwrite("test_img11.jpg", tmp_tool[0])
           # # cv.imwrite("test_img12.jpg", tmp_tool[1])
+
+          cv.imwrite("test_img10.jpg", now_img)
+          #デバック用
+          for i in range(len(tmp_tool)):
+            cv.imwrite("test_img1"+str(i+1)+".jpg", tmp_tool[i])
   
           print("現在の工具数:" + str(len(tmp_tool)))
   
