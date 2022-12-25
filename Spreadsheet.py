@@ -95,3 +95,14 @@ def write_lend(user_id, tool_id, time):
   worksheet.update_cell(write_row, 2, str(tool_id+1))
   worksheet.update_cell(write_row, 3, str(time))
   worksheet.update_cell(write_row, 4, str(1))
+
+def get_lend_info():
+  worksheet = workbook.worksheet('貸し出し情報')
+  
+  tmp = worksheet.find("工具ID")
+  id_data = worksheet.col_values(tmp.col)
+
+  tmp = worksheet.find("貸出フラグ")
+  flag_data = worksheet.col_values(tmp.col)
+
+  return id_data, flag_data

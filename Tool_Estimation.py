@@ -4,6 +4,7 @@ import math
 import random
 import Spreadsheet as SS
 import SlackBot as SB
+import copy
 
 def img_processing(img):
   #エッジ検出
@@ -38,9 +39,6 @@ def img_processing(img):
   src_out = src_th | im_floodfill_inv
   
   color_src01 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
-  # color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
-  
-  # cv2.imwrite("data_initial.jpg", color_src02)
   
   label = cv2.connectedComponentsWithStats(src_out)
   # オブジェクト情報を項目別に抽出
@@ -77,41 +75,7 @@ def img_processing(img):
   return color_src01, tool, center
 
 def img_processing_debug(img):
-  # #エッジ検出
-  # canny_img = cv2.Canny(img, 60, 141) #canny
-  # # 画像をグレースケールで読み込み
-  
-  # # 前処理（平準化フィルターを適用した場合）
-  # # 前処理が不要な場合は下記行をコメントアウト
-  # blur_src = cv2.GaussianBlur(canny_img, (5, 5), 3)
-  # # 二値変換
-  # # 前処理を使用しなかった場合は、blur_srcではなくgray_srcに書き換えるする
-  # mono_src = cv2.threshold(blur_src, 48, 255, cv2.THRESH_BINARY_INV)[1]
-  # # ラベリング結果書き出し用に二値画像をカラー変換
-  
-  # th, src_th = cv2.threshold(mono_src, 220, 255, cv2.THRESH_BINARY_INV)
-   
-  # # Copy the thresholded image.
-  # im_floodfill = src_th.copy()
-   
-  # # Mask used to flood filling.
-  # # Notice the size needs to be 2 pixels than the image.
-  # h, w = src_th.shape[:2]
-  # mask = np.zeros((h+2, w+2), np.uint8)
-   
-  # # Floodfill from point (0, 0)
-  # cv2.floodFill(im_floodfill, mask, (10,10), 255)
-   
-  # # Invert floodfilled image
-  # im_floodfill_inv = cv2.bitwise_not(im_floodfill)
-   
-  # # Combine the two images to get the foreground.
-  # src_out = src_th | im_floodfill_inv
-  
   color_src01 = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-  # color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
-  
-  # cv2.imwrite("data_initial.jpg", color_src02)
   
   label = cv2.connectedComponentsWithStats(img)
   # オブジェクト情報を項目別に抽出
@@ -281,3 +245,21 @@ def different_tool(tool_id):
   tool_name = SS.get_tool_name(tool_id)
   message = "工具ID [" + str(tool_id) + "]:" + tool_name + "が違う工具になっています" + name + "さんが代表して確認をお願いします"
   SB.write_DM(slack_id, message)
+
+def past_data_acquisition(init_tool, init_center):
+  tool_id, tool_flag = SS.get_lend_info()
+  past_tool = copy.copy(init_tool)
+  past_center = copy.copy(init_center)
+  
+  for i in range(len(init_tool)): #工具IDを移動
+    for j in range(len(tool_id)-1, 0, -1): #取得したtool_idを移動(後ろから)
+      if (str(i+1) == tool_id[j]) and (tool_flag[j] == str(1)):
+        past_tool[i] = "none"
+        past_center[i] = "none"
+        break
+      elif (str(i+1) == tool_id[j]) and (tool_flag[j] == str(0)):
+        past_tool[i] = init_tool[i]
+        past_center[i] = init_center[i]
+        break
+  
+  return past_tool, past_center

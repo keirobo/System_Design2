@@ -40,14 +40,12 @@ def main():
   init_img, init_tool, init_center = joblib.load(open("initial_data.txt", 'rb'))
   
   past_img = init_img
-  past_tool = init_tool
-  past_center = init_center
 
   print("データ取得完了")
 
-  cv.imwrite("test_img00.jpg", init_img)
-  cv.imwrite("test_img01.jpg", init_tool[0])
-  cv.imwrite("test_img02.jpg", init_tool[1])
+  # cv.imwrite("test_img00.jpg", init_img)
+  # cv.imwrite("test_img01.jpg", init_tool[0])
+  # cv.imwrite("test_img02.jpg", init_tool[1])
 
   # cv.imwrite("test_img100.jpg", past_img)
   # cv.imwrite("test_img101.jpg", past_tool[0])
@@ -61,7 +59,12 @@ def main():
     print("スプレッドシートとSlackBotの設定完了")
   except TimeoutError:
     print("[ERROR/SS] スプレッドシートに接続できません。終了しています...")
-  
+
+  # 前回起動時のデータをスプレッドシートから取得
+  past_tool, past_center = TE.past_data_acquisition(init_tool, init_center)
+
+  print(past_center)
+
   print("QRコードをかざしてください") 
 
   while(True):
@@ -107,6 +110,7 @@ def main():
           
           #画像のエッジ検出を行い、エッジの中を埋める
           now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img)
+          # now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
           
           #デバック用に画像出力(不要時はコメントアウト) 
           # cv.imwrite("test_img10.jpg", now_img)
