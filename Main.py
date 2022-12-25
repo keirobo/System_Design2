@@ -7,6 +7,7 @@ import numpy as np
 import time
 import joblib
 import datetime
+import random
 
 INTERVAL = 10 #[minute]
 notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
@@ -92,7 +93,11 @@ def main():
           cv.imwrite('camera_test.jpg', frame)
           
           #デバック用(不要時はコメントアウト)
-          frame = cv.imread("initial.jpg")
+          # frame = cv.imread("initial.jpg")
+          # 0:initial 1:ペンチなし 2:ドライバーとラジオペンチなし 3:やすりとペンチとはさみなし 4:ドライバーなし 5:ペンチとラジオペンチとドライバーなし
+          rand_num = random.randint(0, 5)
+          frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
+          print("rand_num:" + str(rand_num))
           
           #工具判別処理
           
@@ -101,28 +106,29 @@ def main():
           gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
           
           #画像のエッジ検出を行い、エッジの中を埋める
-          now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
+          now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img)
           
           #デバック用に画像出力(不要時はコメントアウト) 
           # cv.imwrite("test_img10.jpg", now_img)
           # cv.imwrite("test_img11.jpg", tmp_tool[0])
           # # cv.imwrite("test_img12.jpg", tmp_tool[1])
-
-          cv.imwrite("test_img10.jpg", now_img)
-          #デバック用
-          for i in range(len(tmp_tool)):
-            cv.imwrite("test_img1"+str(i+1)+".jpg", tmp_tool[i])
   
           print("現在の工具数:" + str(len(tmp_tool)))
   
           # 今の工具の順番を初期の画像の順番と合わせる
           now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
+
+          cv.imwrite("test_img10.jpg", now_img)
+          #デバク用
+          for i in range(len(now_tool)):
+            if(now_tool[i] != "none"):
+              cv.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
   
           print(now_center)
   
           # 前回の工具の画像と順番に比較していって
           # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-          TE.comparison(output[0], past_tool, past_center, now_tool, now_center, last_time)
+          TE.comparison(output[0], init_tool, past_tool, past_center, now_tool, now_center, last_time)
           
           #今回の値を次回に引き継ぎ
           past_tool = now_tool
@@ -133,8 +139,14 @@ def main():
       else:
         flag_once = 0
 
-    except cv.error:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
+    except Exception as e:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
       print("error出たよ")
+      print('=== エラー内容 ===')
+      print('type:' + str(type(e)))
+      print('args:' + str(e.args))
+      print('e自身:' + str(e))
+      print('=================')
+      print("QRコードをかざしてください")
 
 
 def time_comparison(last_time):
