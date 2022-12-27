@@ -8,21 +8,31 @@ import time
 import joblib
 import datetime
 import random
+import tkinter
+from tkinter import messagebox
+import threading
+import sys
+import keyboard
+import PIL
+from PIL import Image, ImageTk, ImageOps
+import multiprocessing
+
 
 INTERVAL = 10 #[minute]
 notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 
-def main():
 
-  flag_once  = 0
+def init():
+  # global frame
+  # , cap, detector
+  # global init_img, init_tool, init_center, past_img, past_tool, past_center
+  # global last_time
+
   last_time = datetime.datetime.now()
   
   print("カメラ起動中...")
   cap = cv.VideoCapture(0)
   detector = cv.QRCodeDetector()
-  #出力ウィンドウの設定
-  # cap.set(3,640)
-  # cap.set(3,480)
   print("カメラ起動完了")
   
   print("各種初期データを取得中...")
@@ -43,14 +53,6 @@ def main():
 
   print("データ取得完了")
 
-  # cv.imwrite("test_img00.jpg", init_img)
-  # cv.imwrite("test_img01.jpg", init_tool[0])
-  # cv.imwrite("test_img02.jpg", init_tool[1])
-
-  # cv.imwrite("test_img100.jpg", past_img)
-  # cv.imwrite("test_img101.jpg", past_tool[0])
-  # cv.imwrite("test_img102.jpg", past_tool[1])
-
   #スプレッドシートのキーを使用してスプレッドシートを開く
   print("スプレッドシートとSlackBotの設定中...")
   try:
@@ -63,30 +65,42 @@ def main():
   # 前回起動時のデータをスプレッドシートから取得
   past_tool, past_center = TE.past_data_acquisition(init_tool, init_center)
 
+  ret, frame = cap.read()
+
   print(past_center)
+
+  return last_time, cap, ret, frame, detector, init_img, init_tool, init_center, past_img, past_tool, past_center
+
+
+def main(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center):
+  flag_once = 0
+
+  print("aaa")
 
   print("QRコードをかざしてください") 
 
   while(True):
     # print("main")
-
     ret, frame = cap.read()
+    
+    u(frame)
     #フレームが正しく読み取られた場合、retはTrue
+    # window(frame)
     if not ret:
         print("[ERROR] フレームは受信できません。終了しています...")
-        break
+        # break
 
     judge_notice()
 
     #QRコード読み込み処理
     try:
       output = detector.detectAndDecode(frame)
-  
+    
       if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
         flag_once = 1
         last_time = datetime.datetime.now()
         print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
-
+  
         #読み込み成功したら
         if 'output' != None:
           #画像撮影処理
@@ -116,20 +130,19 @@ def main():
           # cv.imwrite("test_img10.jpg", now_img)
           # cv.imwrite("test_img11.jpg", tmp_tool[0])
           # # cv.imwrite("test_img12.jpg", tmp_tool[1])
-  
+    
           print("現在の工具数:" + str(len(tmp_tool)))
-  
+    
           # 今の工具の順番を初期の画像の順番と合わせる
           now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
-
           cv.imwrite("test_img10.jpg", now_img)
           #デバク用
           for i in range(len(now_tool)):
             if(now_tool[i] != "none"):
               cv.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
-  
+    
           print(now_center)
-  
+    
           # 前回の工具の画像と順番に比較していって
           # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
           TE.comparison(output[0], init_tool, past_tool, past_center, now_tool, now_center, last_time)
@@ -137,12 +150,12 @@ def main():
           #今回の値を次回に引き継ぎ
           past_tool = now_tool
           past_center = now_center
-  
+    
           print("処理完了")
           print("QRコードをかざしてください")
       else:
         flag_once = 0
-
+  
     except Exception as e:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
       print("error出たよ")
       print('=== エラー内容 ===')
@@ -151,6 +164,11 @@ def main():
       print('e自身:' + str(e))
       print('=================')
       print("QRコードをかざしてください")
+    
+    if keyboard.is_pressed('escape'):
+      end_program()
+  
+    time.sleep(0.01)
 
 
 def time_comparison(last_time):
@@ -158,6 +176,7 @@ def time_comparison(last_time):
 
   if now_time > last_time + datetime.timedelta(minutes = INTERVAL): return True
   else: return False
+
 
 def judge_notice():
   now_time = datetime.datetime.now()
@@ -181,5 +200,64 @@ def judge_notice():
           notice_time[1][0] = False
 
 
+def end_program():
+  print("処理を終了しました。")
+  sys.exit()
+
+
+def window():
+  global root, canvas
+
+  root = tkinter.Tk()
+  root.title("camera")
+  root.geometry("720x480")
+  root.resizable(width=False, height=False)
+  canvas=tkinter.Canvas(root, width=640, height=480, bg="white")
+  canvas.pack()
+
+  # cv.imwrite("test_test.jpg", frame)
+  # #画像を用意
+  # cv_image = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+  # pil_image = Image.fromarray(cv_image)
+  # photo_image = ImageTk.PhotoImage(image=pil_image)
+  # #画像を描画(中点x,中点y,画像)
+  # canvas.create_image(320,213,image=photo_image)
+
+  # root.protocol("WM_DELETE_WINDOW", end_program)
+
+  # u()
+
+  root.mainloop()
+
+def u(frame):#update
+    global img
+
+    # print("uuu")
+    # ret, frame =c.read()
+    # cv.imwrite("test_test.jpg", frame)
+    if ret:
+        img=ImageTk.PhotoImage(Image.fromarray(cv.cvtColor(frame, cv.COLOR_BGR2RGB)))
+        canvas.create_image(300/2,300/2,image=img)
+    else:
+        print("u-Fail")
+    # root.after(1,u)
+
+def get_monitor_size(root):
+  m_width = root.winfo_screenwidth() #モニターの横幅を渡す
+  m_height = root.winfo_screenheight() #モニターの縦幅を渡す
+
+  return m_width, m_height
+
+
 if __name__ == "__main__":
-  main()
+
+  last_time, cap, ret, frame, detector, init_img, init_tool, init_center, past_img, past_tool, past_center = init()
+  # main(last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center)
+
+  # window()
+
+  thread_1 = threading.Thread(target=window)
+  thread_1.start()
+
+  thread_2 = threading.Thread(target=main, args=(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center))
+  thread_2.start()
