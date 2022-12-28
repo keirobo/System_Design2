@@ -10,6 +10,7 @@ import tkinter
 import sys
 # import keyboard
 from PIL import Image, ImageTk
+from concurrent.futures import ThreadPoolExecutor
 #デバック用
 import random
 
@@ -17,6 +18,8 @@ INTERVAL = 10 #[minute]
 notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 
 def init():
+  flag_once = 0
+
   last_time = datetime.datetime.now()
   
   print("カメラ起動中...")
@@ -54,15 +57,15 @@ def init():
   # 前回起動時のデータをスプレッドシートから取得
   past_tool, past_center = TE.past_data_acquisition(init_tool, init_center)
 
-  ret, frame = cap.read()
+  pool = ThreadPoolExecutor(max_workers=3)
 
   print(past_center)
   print("QRコードをかざしてください") 
 
-  return last_time, cap, ret, frame, detector, init_img, init_tool, init_center, past_img, past_tool, past_center
+  return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, pool
 
 
-def main(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center):
+def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool):
   # print("main")
   ret, frame = cap.read()
   
@@ -74,65 +77,77 @@ def main(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool
   judge_notice()
 
   #QRコード読み込み処理
-  # try:
   output = detector.detectAndDecode(frame)
 
-  if output[0] != "" or time_comparison(last_time):
+  if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
     last_time = datetime.datetime.now()
     print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
-
+    flag_once = 1
     #読み込み成功したら
     if 'output' != None:
-      #画像撮影処理
-      time.sleep(1.5)
-      
-      ret, frame = cap.read()
-      cv.imwrite('camera_test.jpg', frame)
-      
-      #デバック用(不要時はコメントアウト)
-      # frame = cv.imread("initial.jpg")
-      # 0:initial 1:ペンチなし 2:ドライバーとラジオペンチなし 3:やすりとペンチとはさみなし 4:ドライバーなし 5:ペンチとラジオペンチとドライバーなし
-      rand_num = random.randint(0, 5)
-      frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
-      print("rand_num:" + str(rand_num))
-      
-      #工具判別処理
-      
-      print("処理中")
-      #グレースケールで読み込み    
-      gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-      
-      #画像のエッジ検出を行い、エッジの中を埋める
-      now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img) #デバック用
-      # now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
-      
-      #デバック用に画像出力(不要時はコメントアウト) 
-      # cv.imwrite("test_img10.jpg", now_img)
-      # cv.imwrite("test_img11.jpg", tmp_tool[0])
-      # # cv.imwrite("test_img12.jpg", tmp_tool[1])
+      print("処理")
+      with ThreadPoolExecutor(max_workers=2, thread_name_prefix="thread") as executor:
+        futures = []
+        futures.append(executor.submit(processing, output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
+        tmp = futures[0].result()
 
-      print("現在の工具数:" + str(len(tmp_tool)))
+        flag_once = tmp[0]
+        past_tool = tmp[1]
+        past_center = tmp[2]
 
-      # 今の工具の順番を初期の画像の順番と合わせる
-      now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
-      cv.imwrite("test_img10.jpg", now_img)
-      #デバク用
-      for i in range(len(now_tool)):
-        if(now_tool[i] != "none"):
-          cv.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
+  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
 
-      print(now_center)
 
-      # 前回の工具の画像と順番に比較していって
-      # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
-      TE.comparison(output[0], init_tool, past_tool, past_center, now_tool, now_center, last_time)
-      
-      #今回の値を次回に引き継ぎ
-      past_tool = now_tool
-      past_center = now_center
+def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once):
+  #画像撮影処理
+  time.sleep(1.5)
+  
+  ret, frame = cap.read()
+  cv.imwrite('camera_test.jpg', frame)
+  
+  #デバック用(不要時はコメントアウト)
+  # frame = cv.imread("initial.jpg")
+  # 0:initial 1:ペンチなし 2:ドライバーとラジオペンチなし 3:やすりとペンチとはさみなし 4:ドライバーなし 5:ペンチとラジオペンチとドライバーなし
+  rand_num = random.randint(0, 5)
+  frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
+  print("rand_num:" + str(rand_num))
+  
+  #工具判別処理
+  
+  print("処理中")
+  #グレースケールで読み込み    
+  gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+  
+  #画像のエッジ検出を行い、エッジの中を埋める
+  now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img) #デバック用
+  # now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
 
-      print("処理完了")
-      print("QRコードをかざしてください")
+  print("現在の工具数:" + str(len(tmp_tool)))
+
+  # 今の工具の順番を初期の画像の順番と合わせる
+  now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
+  # cv.imwrite("test_img10.jpg", now_img)
+  #デバク用
+  # for i in range(len(now_tool)):
+  #   if(now_tool[i] != "none"):
+  #     cv.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
+
+  print(now_center)
+
+  # 前回の工具の画像と順番に比較していって
+  # 無くなっていたら貸し出し関数、戻っていたら返却関数を呼び出す
+  TE.comparison(id, init_tool, past_tool, past_center, now_tool, now_center, last_time)
+  
+  #今回の値を次回に引き継ぎ
+  past_tool = now_tool
+  past_center = now_center
+
+  print("処理完了")
+  print("QRコードをかざしてください")
+
+  flag_once = 0
+
+  return flag_once, past_tool, past_center
 
   # except Exception as e:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
   #   print("error出たよ")
@@ -142,8 +157,6 @@ def main(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool
   #   print('e自身:' + str(e))
   #   print('=================')
   #   print("QRコードをかざしてください")
-
-  root.after(1,main, last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center)
 
 
 def time_comparison(last_time):
@@ -181,7 +194,7 @@ def end_program():
   sys.exit()
 
 
-def window(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center):
+def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool):
   global root, canvas
 
   root = tkinter.Tk()
@@ -191,7 +204,7 @@ def window(last_time, cap, ret, frame, detector, init_tool, init_center, past_to
   canvas=tkinter.Canvas(root, width=640, height=480, bg="white")
   canvas.pack()
 
-  main(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center)
+  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
 
   root.mainloop()
 
@@ -213,6 +226,6 @@ def get_monitor_size(root):
 
 if __name__ == "__main__":
 
-  last_time, cap, ret, frame, detector, init_img, init_tool, init_center, past_img, past_tool, past_center = init()
+  last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, pool = init()
 
-  window(last_time, cap, ret, frame, detector, init_tool, init_center, past_tool, past_center)
+  window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
