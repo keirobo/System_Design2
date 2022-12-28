@@ -10,7 +10,6 @@ import tkinter
 import sys
 # import keyboard
 from PIL import Image, ImageTk
-from concurrent.futures import ThreadPoolExecutor
 import threading
 #デバック用
 import random
@@ -66,11 +65,7 @@ def init():
 
 
 def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
-  # print("main")
   ret, frame = cap.read()
-  results = dict()
-  
-  # print("aaa")
   
   update_canvas(ret, frame)
   #フレームが正しく読み取られた場合、retはTrue
@@ -91,9 +86,8 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
       print("処理")
       thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
       thread.start()
-      
+
   if len(values) > 0:
-    # print(values)
     flag_once = values[0]
     past_tool = values[1]
     past_center = values[2]
