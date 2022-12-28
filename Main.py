@@ -11,11 +11,13 @@ import sys
 # import keyboard
 from PIL import Image, ImageTk
 from concurrent.futures import ThreadPoolExecutor
+import threading
 #デバック用
 import random
 
 INTERVAL = 10 #[minute]
 notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
+values = []
 
 def init():
   flag_once = 0
@@ -57,17 +59,18 @@ def init():
   # 前回起動時のデータをスプレッドシートから取得
   past_tool, past_center = TE.past_data_acquisition(init_tool, init_center)
 
-  pool = ThreadPoolExecutor(max_workers=3)
-
   print(past_center)
   print("QRコードをかざしてください") 
 
-  return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, pool
+  return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once
 
 
-def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool):
+def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
   # print("main")
   ret, frame = cap.read()
+  results = dict()
+  
+  # print("aaa")
   
   update_canvas(ret, frame)
   #フレームが正しく読み取られた場合、retはTrue
@@ -86,21 +89,23 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
     #読み込み成功したら
     if 'output' != None:
       print("処理")
-      with ThreadPoolExecutor(max_workers=2, thread_name_prefix="thread") as executor:
-        futures = []
-        futures.append(executor.submit(processing, output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
-        tmp = futures[0].result()
+      thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
+      thread.start()
+      
+  if len(values) > 0:
+    # print(values)
+    flag_once = values[0]
+    past_tool = values[1]
+    past_center = values[2]
 
-        flag_once = tmp[0]
-        past_tool = tmp[1]
-        past_center = tmp[2]
+    values.clear()
 
-  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
+  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
 
 
 def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once):
   #画像撮影処理
-  time.sleep(1.5)
+  time.sleep(1)
   
   ret, frame = cap.read()
   cv.imwrite('camera_test.jpg', frame)
@@ -147,7 +152,10 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
 
   flag_once = 0
 
-  return flag_once, past_tool, past_center
+  # return flag_once, past_tool, past_center
+  values.append(flag_once)
+  values.append(past_tool)
+  values.append(past_center)
 
   # except Exception as e:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
   #   print("error出たよ")
@@ -194,7 +202,7 @@ def end_program():
   sys.exit()
 
 
-def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool):
+def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
   global root, canvas
 
   root = tkinter.Tk()
@@ -204,7 +212,7 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   canvas=tkinter.Canvas(root, width=640, height=480, bg="white")
   canvas.pack()
 
-  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
+  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
 
   root.mainloop()
 
@@ -226,6 +234,6 @@ def get_monitor_size(root):
 
 if __name__ == "__main__":
 
-  last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, pool = init()
+  last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once = init()
 
-  window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, pool)
+  window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
