@@ -7,6 +7,7 @@ import time
 import joblib
 import datetime
 import tkinter
+import tkinter.ttk as ttk
 import sys
 # import keyboard
 from PIL import Image, ImageTk
@@ -66,33 +67,40 @@ def init():
 
 def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
   ret, frame = cap.read()
+
+  if flag_once == 0:
+    update_main_canvas(ret, frame)
   
-  update_canvas(ret, frame)
   #フレームが正しく読み取られた場合、retはTrue
   if not ret:
       print("[ERROR] フレームは受信できません。終了しています...")
 
   judge_notice()
-
-  #QRコード読み込み処理
-  output = detector.detectAndDecode(frame)
-
-  if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
-    last_time = datetime.datetime.now()
-    print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
-    flag_once = 1
-    #読み込み成功したら
-    if 'output' != None:
-      print("処理")
-      thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
-      thread.start()
-
-  if len(values) > 0:
-    flag_once = values[0]
-    past_tool = values[1]
-    past_center = values[2]
-
-    values.clear()
+  
+  try:
+    #QRコード読み込み処理
+    output = detector.detectAndDecode(frame)
+  
+    if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
+      # cam1_frame.tkraise()
+      last_time = datetime.datetime.now()
+      print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
+      flag_once = 1
+      #読み込み成功したら
+      if 'output' != None:
+        print("処理")
+        thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
+        thread.start()
+  
+    if len(values) > 0:
+      main_frame.tkraise()
+      flag_once = values[0]
+      past_tool = values[1]
+      past_center = values[2]
+  
+      values.clear()
+  except:
+    print("error1")
 
   root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
 
@@ -103,13 +111,19 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   
   ret, frame = cap.read()
   cv.imwrite('camera_test.jpg', frame)
-  
+
   #デバック用(不要時はコメントアウト)
   # frame = cv.imread("initial.jpg")
   # 0:initial 1:ペンチなし 2:ドライバーとラジオペンチなし 3:やすりとペンチとはさみなし 4:ドライバーなし 5:ペンチとラジオペンチとドライバーなし
   rand_num = random.randint(0, 5)
   frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
   print("rand_num:" + str(rand_num))
+
+  # update_canvas(ret, frame)
+
+  # time.sleep(0.5)
+
+  # cam2_frame.tkraise()
   
   #工具判別処理
   
@@ -120,8 +134,13 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   #画像のエッジ検出を行い、エッジの中を埋める
   now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img) #デバック用
   # now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
+  update_main_canvas(ret, now_img)
+
+  time.sleep(1)
 
   print("現在の工具数:" + str(len(tmp_tool)))
+
+  cam1_frame.tkraise()
 
   # 今の工具の順番を初期の画像の順番と合わせる
   now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
@@ -197,27 +216,76 @@ def end_program():
 
 
 def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
-  global root, canvas
+  global root, cam11_canvas, cam12_canvas, main_canvas
+  global main_frame, cam1_frame
 
   root = tkinter.Tk()
-  root.title("camera")
-  root.geometry("720x480")
-  root.resizable(width=False, height=False)
-  canvas=tkinter.Canvas(root, width=640, height=480, bg="white")
-  canvas.pack()
+  root.state('zoomed')
+  # root.attributes("-fullscreen", True)
+  root.resizable(False, False)
+  m_width, m_height = get_monitor_size(root)
+
+  root.title("Tkinter_cv2")
+
+  # ウィンドウの大きさを決定
+  root.geometry("800x600")
+
+  # ウィンドウのグリッドを 1x1 にする
+  # この処理をコメントアウトすると配置がズレる
+  root.grid_rowconfigure(0, weight=1)
+  root.grid_columnconfigure(0, weight=1)
+
+#-----------------------------main_frame---------------------------------
+  # メインページフレーム作成
+  main_frame = tkinter.Frame()
+  main_frame.grid(row=0, column=0, sticky="nsew")
+
+  margin = 0
+
+  # タイトルラベル作成
+  titleLabel0 = tkinter.Label(main_frame, text="main", font=('Helvetica', '35'))
+  titleLabel0.grid(row=0, column=0, sticky="nsew")
+
+  main_canvas = tkinter.Canvas(main_frame, width = m_width, height = m_height)
+  main_canvas.grid(row=1, column=0, sticky="nsew")
+
+#-----------------------------cam1_frame---------------------------------
+  # カメラ1用フレーム作成
+  cam1_frame = tkinter.Frame()
+  cam1_frame.grid(row=0, column=0, sticky="nsew")
+
+  titleLabel1 = tkinter.Label(cam1_frame, text="処理中．．．", font=('Helvetica', '35'))
+  titleLabel1.grid(row=0, column=0, padx=margin, sticky="nsew")
+  # # カメラ1用キャンバス作成
+  # cam11_canvas = tkinter.Canvas(cam1_frame, width = m_width/2, height = m_height)
+  # cam11_canvas.grid(row=1, column=0, padx=0, sticky="nsew")
+  
+  # cam12_canvas = tkinter.Canvas(cam1_frame, width = m_width/2, height = m_height)
+  # cam12_canvas.grid(row=1, column=1, padx=0, sticky="nsew")
+
+  #main_frameを一番上に表示
+  main_frame.tkraise()
 
   main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
 
   root.mainloop()
 
-def update_canvas(ret, frame):#update
-    global img
 
-    if ret:
-        img=ImageTk.PhotoImage(Image.fromarray(cv.cvtColor(frame, cv.COLOR_BGR2RGB)))
-        canvas.create_image(300/2,300/2,image=img)
-    else:
-        print("u-Fail")
+def changePage(page):
+  page.tkraise()
+
+
+def update_main_canvas(ret, frame):#update
+  global img
+  
+  if ret:
+    width, height = get_monitor_size(root)
+    img_resize = cv.resize(frame, (640*2, 480*2))
+    img = ImageTk.PhotoImage(Image.fromarray(cv.cvtColor(img_resize, cv.COLOR_BGR2RGB)))
+    main_canvas.create_image (width/2, height/2.2, image=img)
+  else:
+    print("u-Fail")
+
 
 def get_monitor_size(root):
   m_width = root.winfo_screenwidth() #モニターの横幅を渡す
