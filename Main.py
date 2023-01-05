@@ -110,7 +110,7 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   time.sleep(1)
   
   ret, frame = cap.read()
-  cv.imwrite('camera_test.jpg', frame)
+  # cv.imwrite('camera_test.jpg', frame)
 
   #デバック用(不要時はコメントアウト)
   # frame = cv.imread("initial.jpg")
