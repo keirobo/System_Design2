@@ -243,7 +243,7 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   margin = 0
 
   # タイトルラベル作成
-  titleLabel0 = tkinter.Label(main_frame, text="main", font=('Helvetica', '35'))
+  titleLabel0 = tkinter.Label(main_frame, text="QRコードをかざしてください", font=('Helvetica', '35'))
   titleLabel0.grid(row=0, column=0, sticky="nsew")
 
   main_canvas = tkinter.Canvas(main_frame, width = m_width, height = m_height)
