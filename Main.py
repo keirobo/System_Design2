@@ -15,8 +15,8 @@ import threading
 #デバック用
 import random
 
-INTERVAL = 10 #[minute]
-notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
+# INTERVAL = 10 #[minute]
+# notice_time = [["12:00", "16:20"], [False, False]] #一旦工具の返却を促す時間の設定(通知回数の増減は配列の要素数)
 values = []
 
 def init():
@@ -59,13 +59,17 @@ def init():
   # 前回起動時のデータをスプレッドシートから取得
   past_tool, past_center = TE.past_data_acquisition(init_tool, init_center)
 
+  interval = SS.get_interval_time()
+  notice_time = SS.get_notice_time()
+  print("interval:" + interval + ", noticetime:" + str(notice_time))
+
   print(past_center)
   print("QRコードをかざしてください") 
 
-  return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once
+  return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, interval, notice_time
 
 
-def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
+def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time):
   ret, frame = cap.read()
 
   if flag_once == 0:
@@ -75,13 +79,16 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
   if not ret:
       print("[ERROR] フレームは受信できません。終了しています...")
 
-  judge_notice()
+  judge_notice(notice_time)
   
   try:
     #QRコード読み込み処理
     output = detector.detectAndDecode(frame)
+
+    # print("通知時間:" + str(notice_time))
+    # print("インターバル:" + str(interval))
   
-    if (output[0] != "" and flag_once == 0) or time_comparison(last_time):
+    if (output[0] != "" and flag_once == 0) or time_comparison(last_time, interval):
       # cam1_frame.tkraise()
       last_time = datetime.datetime.now()
       print(last_time.strftime('%Y-%m-%d %H:%M:%S') + "  id:" + str(output[0]))
@@ -99,10 +106,16 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
       past_center = values[2]
   
       values.clear()
-  except:
-    print("error1")
+  except Exception as e:  #QRコード周りでエラーがちょくちょく出るのでとりあえずこれで対応
+    print("error出たよ")
+    print('=== エラー内容 ===')
+    print('type:' + str(type(e)))
+    print('args:' + str(e.args))
+    print('e自身:' + str(e))
+    print('=================')
+    print("QRコードをかざしてください")
 
-  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
+  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time)
 
 
 def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once):
@@ -180,14 +193,14 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   #   print("QRコードをかざしてください")
 
 
-def time_comparison(last_time):
+def time_comparison(last_time, interval):
   now_time = datetime.datetime.now()
 
-  if now_time > last_time + datetime.timedelta(minutes = INTERVAL): return True
+  if now_time > last_time + datetime.timedelta(minutes = int(interval)): return True
   else: return False
 
 
-def judge_notice():
+def judge_notice(notice_time):
   now_time = datetime.datetime.now()
 
   for i in range(len(notice_time[0])):
@@ -215,8 +228,8 @@ def end_program():
   sys.exit()
 
 
-def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once):
-  global root, cam11_canvas, cam12_canvas, main_canvas
+def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time):
+  global root, main_canvas
   global main_frame, cam1_frame
 
   root = tkinter.Tk()
@@ -266,7 +279,7 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   #main_frameを一番上に表示
   main_frame.tkraise()
 
-  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
+  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time)
 
   root.mainloop()
 
@@ -296,6 +309,6 @@ def get_monitor_size(root):
 
 if __name__ == "__main__":
 
-  last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once = init()
+  last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, interval, notice_time = init()
 
-  window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once)
+  window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time)

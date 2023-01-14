@@ -20,6 +20,26 @@ def init(key):
 
   return workbook
 
+def get_interval_time():
+  worksheet = workbook.worksheet('設定')
+  tmp1 = worksheet.find("インターバル時間[分]")
+
+  return worksheet.cell((tmp1.row+1), tmp1.col).value
+
+
+def get_notice_time():
+  worksheet = workbook.worksheet('設定')
+  tmp1 = worksheet.find("通知時間")
+  length = len(worksheet.col_values(tmp1.col)) - 1
+  value = [[] for i in range(2)]
+  for i in range(length+1):
+    if i != 0:
+      tmp = worksheet.cell(tmp1.row + i, tmp1.col).value
+      value[0].append(tmp)
+      value[1].append("False")
+
+  return value
+
 
 def get_slack_id(id):
   # シートを開く
@@ -94,6 +114,7 @@ def write_lend(user_id, tool_id, time):
   worksheet.update_cell(write_row, 2, str(tool_id+1))
   worksheet.update_cell(write_row, 3, str(time))
   worksheet.update_cell(write_row, 4, str(1))
+
 
 def get_lend_info():
   worksheet = workbook.worksheet('貸し出し情報')
