@@ -69,7 +69,7 @@ def init():
   return last_time, cap, detector, init_img, init_tool, init_center, past_img, past_tool, past_center, flag_once, interval, notice_time
 
 
-def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time):
+def main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time, cnt, num):
   ret, frame = cap.read()
 
   if flag_once == 0:
@@ -98,6 +98,12 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
         print("処理")
         thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
         thread.start()
+    else:
+      if(cnt == 15):
+        num = update_label(num)
+        cnt = 0
+      else:
+        cnt = cnt + 1
   
     if len(values) > 0:
       main_frame.tkraise()
@@ -115,7 +121,7 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
     print('=================')
     print("QRコードをかざしてください")
 
-  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time)
+  root.after(1,main, last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time, cnt, num)
 
 
 def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once):
@@ -229,7 +235,7 @@ def end_program():
 
 
 def window(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time):
-  global root, main_canvas
+  global root, main_canvas, titleLabel1
   global main_frame, cam1_frame
 
   root = tkinter.Tk()
@@ -256,7 +262,10 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   margin = 0
 
   # タイトルラベル作成
-  titleLabel0 = tkinter.Label(main_frame, text="QRコードをかざしてください", font=('Helvetica', '35'))
+  # titleLabel1 = tkinter.Label(main_frame, text="工具を取る or 工具を戻してから", font=('Helvetica', '35'))
+  # titleLabel1.grid(row=0, column=0, sticky="nsew")
+
+  titleLabel0 = tkinter.Label(main_frame, text="工具を取る or 工具を戻してから、QRコードをかざしてください。", font=('Helvetica', '35'))
   titleLabel0.grid(row=0, column=0, sticky="nsew")
 
   main_canvas = tkinter.Canvas(main_frame, width = m_width, height = m_height)
@@ -267,8 +276,10 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   cam1_frame = tkinter.Frame()
   cam1_frame.grid(row=0, column=0, sticky="nsew")
 
-  titleLabel1 = tkinter.Label(cam1_frame, text="処理中．．．", font=('Helvetica', '35'))
-  titleLabel1.grid(row=0, column=0, padx=margin, sticky="nsew")
+  titleLabel1 = tkinter.Label(cam1_frame, text="処理中．．．", font=('Helvetica', '60'))
+  titleLabel1.grid(row=0, column=0, sticky=tkinter.W)
+  titleLabel2 = tkinter.Label(cam1_frame, text="処理の完了を待つ必要はありません。作業にお戻りください。", font=('Helvetica', '50'))
+  titleLabel2.grid(row=1, column=0, padx=margin, sticky=tkinter.W)
   # # カメラ1用キャンバス作成
   # cam11_canvas = tkinter.Canvas(cam1_frame, width = m_width/2, height = m_height)
   # cam11_canvas.grid(row=1, column=0, padx=0, sticky="nsew")
@@ -279,7 +290,7 @@ def window(last_time, cap, detector, init_tool, init_center, past_tool, past_cen
   #main_frameを一番上に表示
   main_frame.tkraise()
 
-  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time)
+  main(last_time, cap, detector, init_tool, init_center, past_tool, past_center, flag_once, interval, notice_time, 0, 0)
 
   root.mainloop()
 
@@ -298,6 +309,21 @@ def update_main_canvas(ret, frame):#update
     main_canvas.create_image (width/2, height/2.2, image=img)
   else:
     print("u-Fail")
+
+
+def update_label(num):
+  if(num == 0):
+    titleLabel1["text"] = "処理中"
+    return 1
+  elif(num == 1):
+    titleLabel1["text"] = "処理中."
+    return 2
+  elif(num == 2):
+    titleLabel1["text"] = "処理中.."
+    return 3
+  elif(num == 3):
+    titleLabel1["text"] = "処理中..."
+    return 0
 
 
 def get_monitor_size(root):
