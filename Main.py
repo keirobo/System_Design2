@@ -12,6 +12,7 @@ import sys
 # import keyboard
 from PIL import Image, ImageTk
 import threading
+import winsound
 #デバック用
 import random
 
@@ -95,6 +96,7 @@ def main(last_time, cap, detector, init_tool, init_center, past_tool, past_cente
       flag_once = 1
       #読み込み成功したら
       if 'output' != None:
+        winsound.Beep(3000, 1000)
         print("処理")
         thread = threading.Thread(target=processing, args=(output[0], last_time, cap, frame, init_tool, init_center, past_tool, past_center, flag_once))
         thread.start()
