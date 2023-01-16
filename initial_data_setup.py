@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import random
 import sys
+import copy
 
 def img_processing(img):
     #エッジ検出
@@ -38,7 +39,7 @@ def img_processing(img):
     src_out = src_th | im_floodfill_inv
     
     color_src01 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
-    # color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
+    color_src02 = cv2.cvtColor(src_out, cv2.COLOR_GRAY2BGR)
     
     # cv2.imwrite("data_initial.jpg", color_src02)
     
@@ -65,29 +66,33 @@ def img_processing(img):
         x1 = data[i][0] + data[i][2]
         y1 = data[i][1] + data[i][3]
       
-        tool.append(color_src01[y0 : y1, x0: x1])
+        tool.append(color_src02[y0 : y1, x0: x1])
       
-        # cv2.rectangle(color_src01, (x0, y0), (x1, y1), (0, 0, 255))
+        #============== 番号が知りたいときは、ここの中のコメントアウトを外して ======================================================
+        # cv2.rectangle(color_src02, (x0, y0), (x1, y1), (0, 0, 255))
         # # # 各オブジェクトのラベル番号と面積に黄文字で表示
-        # # cv2.putText(color_src01, "ID: " +str(i + 1), (x1 - 20, y1 + 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
-        # cv2.putText(color_src01, "S: " +str(data[i][4]), (x1 - 20, y1 + 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
+        # cv2.putText(color_src02, "ID: " +str(i + 1), (x1 - 20, y1 + 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
+        # # cv2.putText(color_src01, "S: " +str(data[i][4]), (x1 - 20, y1 + 15), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
         # # # 各オブジェクトの重心座標を黄文字で表示
-        # cv2.putText(color_src01, "X: " + str(int(center[i][0])), (x1 - 20, y1 + 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
-        # cv2.putText(color_src01, "Y: " + str(int(center[i][1])), (x1 - 20, y1 + 45), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
+        # cv2.putText(color_src02, "X: " + str(int(center[i][0])), (x1 - 20, y1 + 30), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
+        # cv2.putText(color_src02, "Y: " + str(int(center[i][1])), (x1 - 20, y1 + 45), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255))
+
+        # cv2.imwrite("ID_img.jpg", color_src02)
+        #=========================================================================================================================
         
     return color_src01, tool, center
 
 if __name__ == '__main__':
 
     # 写真撮るとき ============================
-    # deviceid=0 # it depends on the order of USB connection. 
-    # capture = cv2.VideoCapture(deviceid)
+    deviceid=0 # it depends on the order of USB connection. 
+    capture = cv2.VideoCapture(deviceid)
 
-    # ret, gray_img = capture.read()
+    ret, gray_img = capture.read()
 
     #==========================================
 
-    gray_img = cv2.imread("initial.jpg", 0)
+    # gray_img = cv2.imread("initial.jpg", 0) #元々ある画像を使うとき
 
     now_img, now_tool, now_center = img_processing(gray_img)
     
@@ -95,10 +100,6 @@ if __name__ == '__main__':
     #デバック用
     for i in range(len(now_tool)):
         cv2.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
-    # cv2.imwrite("test_img10.jpg", now_img)
-    # cv2.imwrite("test_img11.jpg", now_tool[0])
-    # cv2.imwrite("test_img12.jpg", now_tool[1])
-    # print(now_center)
 
     joblib.dump((now_img,now_tool,now_center,), open("initial_data.txt", 'wb'), compress=3)
     
