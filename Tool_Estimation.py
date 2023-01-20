@@ -146,12 +146,15 @@ def maching(img1, img2):
           good_matches.append(first)
   
   dist = [m.distance for m in good_matches]
+
+  # dst = cv2.drawMatches(img1, kp1, img2, kp2, good_matches, None)
+  # cv2.imwrite("test.jpg", dst)
       
   ret = sum(dist) / len(dist)
   print("ret:" + str(ret))
           
   # マッチング結果を描画する。
-  dst = cv2.drawMatches(img1, kp1, img2, kp2, good_matches, None)
+  # dst = cv2.drawMatches(img1, kp1, img2, kp2, good_matches, None)
   # cv2.imwrite("test.jpg", dst)
 
   return ret
@@ -180,13 +183,14 @@ def number_sequencing(init_data, init_center, now_data, now_center):
       # 初期画像と現在画像の中心間距離の計算
       tmp_dist = math.sqrt((init_x - now_x)**2 + (init_y - now_y)**2)
 
-      # print("tmp_dist:" + str(tmp_dist) + ", min_dist:" + str(min_dist))
+      # print("i:" + str(i) + ", j:"+ str(j) + ", tmp_dist:" + str(tmp_dist) + ", min_dist:" + str(min_dist))
       
       # 今格納されている値よりも小さければ値を更新
       if min_dist >= tmp_dist:
         data = j
         min_dist = tmp_dist
       
+      # print("mindist:" + str(min_dist))
       # print("data:" + str(data))
       
     # 最終的にreturnするデータの格納
@@ -209,7 +213,7 @@ def comparison(id, init_tool, past_tool, past_center, now_tool, now_center, time
     if((np.isin(['none'], past_center[i]) == True) and (np.isin(['none'], now_center[i]) != True)):
       print("返却処理")
       ret = maching(init_tool[i], now_tool[i])
-      if(ret <= 30):
+      if(ret <= 60):
         # return_tool(id, i, past_tool[i], now_tool[i])
         SS.write_return(id, i, time)
       else:
@@ -225,7 +229,7 @@ def comparison(id, init_tool, past_tool, past_center, now_tool, now_center, time
       if(np.isin(['none'], past_center[i]) != True) and (np.isin(['none'], now_center[i]) != True):
         ret = maching(past_tool[i], now_tool[i])
         #違う工具と判別された場合はランダムに指定して確認をお願いする
-        if(ret > 30):
+        if(ret > 60):
           different_tool(i)
         else:
           print("変化なし")

@@ -131,14 +131,14 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   time.sleep(1)
   
   ret, frame = cap.read()
-  # cv.imwrite('camera_test.jpg', frame)
+  cv.imwrite('camera_test.jpg', frame)
 
   #デバック用(不要時はコメントアウト)
-  # frame = cv.imread("initial.jpg")
+  # frame = cv.imread("now0.jpg")
   # 0:initial 1:ペンチなし 2:ドライバーとラジオペンチなし 3:やすりとペンチとはさみなし 4:ドライバーなし 5:ペンチとラジオペンチとドライバーなし
-  rand_num = random.randint(0, 5)
-  frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
-  print("rand_num:" + str(rand_num))
+  # rand_num = random.randint(0, 5)
+  # frame = cv.imread("now_images/now" + str(rand_num) + ".jpg")
+  # print("rand_num:" + str(rand_num))
 
   # update_canvas(ret, frame)
 
@@ -153,23 +153,28 @@ def processing(id, last_time, cap, frame, init_tool, init_center, past_tool, pas
   gray_img = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
   
   #画像のエッジ検出を行い、エッジの中を埋める
-  now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img) #デバック用
-  # now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
+  # now_img, tmp_tool, tmp_center = TE.img_processing_debug(gray_img) #デバック用
+  now_img, tmp_tool, tmp_center = TE.img_processing(gray_img)
   update_main_canvas(ret, now_img)
 
+  # print(TE.maching(cv.imread("now0.jpg"), cv.imread("now0.jpg")))
   time.sleep(1)
 
   print("現在の工具数:" + str(len(tmp_tool)))
 
   cam1_frame.tkraise()
 
+  # for i in range(len(tmp_tool)):
+  #   if(tmp_tool[i] != "none"):
+  #     cv.imwrite("test_img0"+str(i+1)+".jpg", tmp_tool[i])
+
   # 今の工具の順番を初期の画像の順番と合わせる
   now_tool, now_center = TE.number_sequencing(init_tool, init_center, tmp_tool, tmp_center)
   # cv.imwrite("test_img10.jpg", now_img)
-  #デバク用
+  # デバク用
   # for i in range(len(now_tool)):
   #   if(now_tool[i] != "none"):
-  #     cv.imwrite("test_img1"+str(i+1)+".jpg", now_tool[i])
+  #     cv.imwrite("test_img0"+str(i+1)+".jpg", now_tool[i])
 
   print(now_center)
 
